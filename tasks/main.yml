@@ -1,8 +1,8 @@
 ---
-- name: Creates docker compose directory
-  file: path=/root/{{docker_deployment}} state=directory
+# - name: Creates docker compose directory
+#   file: path=/root/{{docker_deployment}} state=directory
 
 - name: copy docker compose file
-  template: src="{{ role_path }}/files/{{docker_deployment}}" dest=/root/
+  copy: src="{{ role_path }}/files/{{docker_deployment}}" dest="/root"
   notify:
     - restart docker compose
