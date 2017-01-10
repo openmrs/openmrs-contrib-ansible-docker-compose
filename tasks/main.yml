@@ -3,6 +3,6 @@
   file: path=/root/{{docker_deployment}} state=directory
 
 - name: copy docker compose file
-  template: src=files/{{docker_deployment}} dest=/root/
+  template: src="{{ role_path }}/files/{{docker_deployment}}" dest=/root/
   notify:
     - restart docker compose
