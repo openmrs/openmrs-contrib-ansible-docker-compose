@@ -1,0 +1,4 @@
+---
+# vars file for cintiadr.openmrs-docker
+
+docker_deployment: demo
