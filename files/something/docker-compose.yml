@@ -18,8 +18,6 @@ services:
     image: cintiadr/openmrs-refapp-demo:2.5  # change to 'image' is using an image deployed to dockerhub
     depends_on:
       - openmrs-referenceapplication-mysql
-    ports:
-      - "8080:8080"
     environment:
       DB_DATABASE: openmrs
       DB_HOST: openmrs-referenceapplication-mysql

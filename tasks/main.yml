@@ -3,6 +3,8 @@
 #   file: path=/root/{{docker_deployment}} state=directory
 
 - name: copy docker compose file
-  copy: src="{{ role_path }}/files/{{docker_deployment}}" dest="/root"
+  copy: src="{{ role_path }}/files/{{item}}" dest="/root"
+  with_items:
+    - "{{docker_deployment}}"
   notify:
     - restart docker compose
