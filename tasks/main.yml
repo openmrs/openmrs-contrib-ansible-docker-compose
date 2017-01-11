@@ -2,8 +2,9 @@
 # - name: Creates docker compose directory
 #   file: path=/root/{{docker_deployment}} state=directory
 
-- name: copy docker compose file
+- name: copy docker compose files
   copy: src="{{ role_path }}/files/{{item}}" dest="/root"
+  register: docker_compose_projects
   with_items:
     - "{{docker_deployment}}"
   notify:

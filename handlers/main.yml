@@ -1,6 +1,6 @@
 ---
 # handlers file for cintiadr.openmrs-docker
-    - name: restart docker compose
-      shell: cd /root/{{ item }} && docker-compose down && docker-compose up -d
-      with_items:
-        - "{{docker_deployment}}"
+  - name: restart docker compose
+    shell: cd /root/{{ item.item }} && docker-compose down && docker-compose up -d
+    when: item.changed
+    with_items: "{{ docker_compose_projects.results }}"
