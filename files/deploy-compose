@@ -1,9 +1,6 @@
 #!/bin/bash -eux
-
 ENVIRONMENT=$1
-export VERSION=$2
-
 
 cd /root/$ENVIRONMENT
 docker-compose down -v
-docker-compose up --build
+docker-compose up --build -d
