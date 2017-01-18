@@ -9,3 +9,6 @@
     - "{{docker_deployment}}"
   notify:
     - restart docker compose
+
+- name: copy deploy script
+  copy: src="{{ role_path }}/files/deploy-compose" dest="/usr/local/bin" mode="0755"
