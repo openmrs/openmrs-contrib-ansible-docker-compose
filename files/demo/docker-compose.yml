@@ -14,7 +14,7 @@ services:
       - ./dbdump:/docker-entrypoint-initdb.d
 
   openmrs-referenceapplication:
-    image: cintiadr/openmrs-refapp-demo:${VERSION:-2.5}
+    image: cintiadr/openmrs-refapp-demo:${VERSION:-demo}
     depends_on:
       - openmrs-referenceapplication-mysql
     ports:
