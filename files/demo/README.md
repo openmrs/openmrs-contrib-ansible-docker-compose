@@ -57,5 +57,7 @@ If you want to generate the SQL with the demo data:
   `mysqldump --user=openmrs --password=$PASSWORD openmrs > /tmp/dump.sql`
   - From outside the container, copy the dump file to your machine:
   `docker cp <container_db_id>:/tmp/dump.sql .`
+  - Due to <https://issues.openmrs.org/browse/SDK-201>, search on the SQL for
+   `search.indexVersion` and make it empty. 
 
 You'll want to replace the SQL file in dbdump, but no other changes should be committed.
