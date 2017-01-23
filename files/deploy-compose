@@ -5,3 +5,19 @@ cd /root/$ENVIRONMENT
 docker-compose pull
 docker-compose down -v
 docker-compose up -d
+
+containers=$(docker-compose ps -q)
+n=0
+until [ $n -ge 15 ]
+do
+  echo "Verifying if docker containers ${containers} are healthy"
+  health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers)
+  echo "Status: "${health_check}
+  echo "${health_check}" | sort -u | egrep -q '^\"healthy\"$' && break
+  echo "Waiting 30s"
+  n=$[$n+1]
+  sleep 30
+done
+
+echo "####################################################"
+docker logs -f
