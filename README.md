@@ -1,4 +1,4 @@
-docker-compose-openmrs
+ansible-docker-compose
 =========
 
 This role is responsible for deploying all the docker-compose files
