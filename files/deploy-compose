@@ -8,16 +8,18 @@ docker-compose up -d
 
 containers=$(docker-compose ps -q)
 n=0
-until [ $n -ge 15 ]
+until [ $n -ge 30 ]
 do
   echo "Verifying if docker containers ${containers} are healthy"
-  health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers)
-  echo "Status: "${health_check}
-  echo "${health_check}" | sort -u | egrep -q '^\"healthy\"$' && break
-  echo "Waiting 30s"
+  health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers | sort -u )
+  echo "Status found: "${health_check}
+  test "${health_check}" = '"healthy"' && exit 0
+  echo "Waiting 15s"
   n=$[$n+1]
-  sleep 30
+  sleep 15
 done
 
 echo "####################################################"
 docker logs -f
+
+exit 1
