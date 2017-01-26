@@ -1,0 +1,10 @@
+version: '2.1'
+
+services:
+  addonindex:
+    image: openmrs/addonindex:latest
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      timeout: 5s
