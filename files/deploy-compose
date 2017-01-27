@@ -3,7 +3,15 @@ ENVIRONMENT=$1
 
 cd /root/$ENVIRONMENT
 docker-compose pull
-docker-compose down -v
+
+[ -s ./deploy.env ] && source ./deploy.env
+DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
+if [ "${DESTROY_VOLUMES}" == "false" ]; then
+  docker-compose down
+else
+  docker-compose down -v
+fi
+
 docker-compose up -d
 
 containers=$(docker-compose ps -q)
