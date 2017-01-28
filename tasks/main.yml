@@ -7,8 +7,14 @@
   register: docker_compose_projects
   with_items:
     - "{{docker_deployment}}"
+    - "dockerhub-webhook"
   notify:
     - restart docker compose
 
 - name: copy deploy script
   copy: src="{{ role_path }}/files/deploy-compose" dest="/usr/local/bin" mode="0755"
+
+- name: create dockerhub-webhook config
+  template:
+    src: "{{ role_path }}/templates/dockerhub-webhook/scripts/index.js.j2"
+    dest: /root/dockerhub-webhook/scripts/index.js

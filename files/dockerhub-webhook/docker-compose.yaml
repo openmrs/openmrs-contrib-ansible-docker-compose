@@ -1,0 +1,15 @@
+version: '2.1'
+services:
+  dockerhub:
+    image: maccyber/dockerhub-webhook
+    ports:
+      - "3000:3000"
+    environment:
+      SERVER_PORT: 3000
+      TOKEN: ${TOKEN:-abc123}
+    volumes:
+      - ./scripts:/src/scripts
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: "wget -O /dev/null localhost:3000"
+      timeout: 20s

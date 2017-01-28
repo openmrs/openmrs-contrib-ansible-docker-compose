@@ -1,2 +1,6 @@
 ---
-# defaults file for cintiadr.openmrs-docker
+# defaults file
+
+docker_deployment: []
+
+docker_deployable_images: []
