@@ -1,7 +1,7 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 ENVIRONMENT=$1
 
-cd /root/$ENVIRONMENT
+cd /root/docker/$ENVIRONMENT
 docker-compose pull
 
 [ -s ./deploy.env ] && source ./deploy.env

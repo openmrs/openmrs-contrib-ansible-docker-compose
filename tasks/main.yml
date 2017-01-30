@@ -3,7 +3,7 @@
 #   file: path=/root/{{docker_deployment}} state=directory
 
 - name: copy docker compose files
-  copy: src="{{ role_path }}/files/{{item}}" dest="/root"
+  copy: src="{{ role_path }}/files/{{item}}" dest="/root/docker"
   register: docker_compose_projects
   with_items:
     - "{{docker_deployment}}"
@@ -11,10 +11,19 @@
   notify:
     - restart docker compose
 
+- name: add executable mode to deploy script
+  file:
+    path: "/root/docker/dockerhub-webhook/scripts/deploy-compose"
+    mode: "0755"
+
 - name: copy deploy script
-  copy: src="{{ role_path }}/files/deploy-compose" dest="/usr/local/bin" mode="0755"
+  file:
+    state: link
+    force: "yes"
+    src: "/root/docker/dockerhub-webhook/scripts/deploy-compose"
+    dest: "/usr/local/bin/deploy-compose"
 
 - name: create dockerhub-webhook config
   template:
     src: "{{ role_path }}/templates/dockerhub-webhook/scripts/index.js.j2"
-    dest: /root/dockerhub-webhook/scripts/index.js
+    dest: /root/docker/dockerhub-webhook/scripts/index.js

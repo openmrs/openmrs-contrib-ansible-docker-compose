@@ -16,7 +16,7 @@ services:
       # - openmrs-referenceapplication-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
 
   openmrs-referenceapplication:
-    image: openmrs/openmrs-reference-application-distro:${VERSION:-demo}
+    image: openmrs/openmrs-reference-application-distro:${OPENMRS_VERSION:-demo}
     depends_on:
       - openmrs-referenceapplication-mysql
     ports:
