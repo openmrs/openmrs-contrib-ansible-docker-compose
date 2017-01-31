@@ -21,6 +21,7 @@ This is a custom role.
   for your application. All files required by your application, including `docker-compose.yaml` file will live there. 
   - Create a pull request and notify the infrastructure team (telegram or talk). 
   Let us know which DNS name you'd like to use. 
+  Let us know if you prefer to have newer images deployed automatically from a Bamboo build or when pushed to dockerhub. 
   - Infrastructure team will merge the pull request, add passwords and secrets, configure 
   deployment of newer versions of the image, and deploy this docker-compose app to a server.
   
