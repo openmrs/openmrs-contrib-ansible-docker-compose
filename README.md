@@ -22,7 +22,7 @@ This is a custom role.
   - Create a pull request and notify the infrastructure team (telegram or talk). 
   Let us know which DNS name you'd like to use. 
   - Infrastructure team will merge the pull request, add passwords and secrets, configure 
-  deployment of newer versions of the image, and deploy a server.
+  deployment of newer versions of the image, and deploy this docker-compose app to a server.
   
 _Note: while you are can deploy new versions of the application without infrastructure team involvement, 
   changes to docker-compose files will need to be deployed by us._
