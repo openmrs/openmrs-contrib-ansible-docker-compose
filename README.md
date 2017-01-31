@@ -24,8 +24,8 @@ This is a custom role.
   - Infrastructure team will merge the pull request, add passwords and secrets, configure 
   deployment of newer versions of the image, and deploy a server.
   
-  _Note: while you are can deploy new versions of the application without infrastructure team involvement, 
-  changes to docker-compose files will need to be done by us._
+_Note: while you are can deploy new versions of the application without infrastructure team involvement, 
+  changes to docker-compose files will need to be deployed by us._
  
 ### Guidelines 
  Your docker-compose file needs to follow the following rules:
@@ -36,7 +36,7 @@ This is a custom role.
   - Docker images should have CI or an automated build to deploy to dockerhub.
   - Pay a lot of attention your image tags. As soon as an image is pushed to dockerhub, 
   deployment will be automatically started. So it's recommended to have an image tag per server 
-  deployed (e.g. 'stg' and 'prd', instead of using latest). 
+  deployed (e.g. 'stg' and 'prd', instead of using 'latest'). 
   - Docker images should _never_ contain passwords and secrets hardcoded. 
   Always allow secrets to be overridden by environment variables. 
   - Add a README file. 
