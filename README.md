@@ -14,24 +14,38 @@ This is a custom role.
   Follow more details on the README file.  
 
 ## Deploying a new docker-compose application to our infrastructure
-
-  - Make sure all the docker images come from dockerhub
-  (Use <https://hub.docker.com/u/openmrs/> for our own images).
-  - Make sure every image created by you has some CI or an automated build to deploy
-  a certain tag to dockerhub.
+  
+### Process   
+  - Create a branch/fork of this repository. 
   - Create a subfolder in <https://github.com/openmrs/openmrs-contrib-ansible-docker-compose/tree/master/files>
-  for your application.
-  - Add docker-compose and any relevant files there.
-  You should have a README file and healthchecks.
+  for your application. All files required by your application, including `docker-compose.yaml` file will live there. 
+  - Create a pull request and notify the infrastructure team (telegram or talk). 
+  Let us know which DNS name you'd like to use. 
+  - Infrastructure team will merge the pull request, add passwords and secrets, configure 
+  deployment of newer versions of the image, and deploy a server.
+  
+  _Note: while you are can deploy new versions of the application without infrastructure team involvement, 
+  changes to docker-compose files will need to be done by us._
+ 
+### Guidelines 
+ Your docker-compose file needs to follow the following rules:
+  
+  - All the docker images should come from dockerhub
+  (Use <https://hub.docker.com/u/openmrs/> for our own images).
+  You cannot build an image from this repository. 
+  - Docker images should have CI or an automated build to deploy to dockerhub.
+  - Pay a lot of attention your image tags. As soon as an image is pushed to dockerhub, 
+  deployment will be automatically started. So it's recommended to have an image tag per server 
+  deployed (e.g. 'stg' and 'prd', instead of using latest). 
+  - Docker images should _never_ contain passwords and secrets hardcoded. 
+  Always allow secrets to be overridden by environment variables. 
+  - Add a README file. 
+  - Add healthchecks to all docker containers. 
   (use docker 1.12+ and docker-compose 1.10+ to have this feature).
-  The docker-compose file should work, and it should allow all credentials to
-  be overridden by environment variables.
-  Make sure to expose a port which is not already exposed on the docker host.
+  - Expose the port which should be called from the web interface. 
   - If you want to persist docker volumes between deployments, make sure to create a `deploy.env`
   file with the following content:
 
   `DESTROY_VOLUMES=false`
 
   By default, volumes are destroyed on every deployment.
-
-  - Create a pull request.
