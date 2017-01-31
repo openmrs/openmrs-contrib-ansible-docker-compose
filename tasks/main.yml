@@ -7,28 +7,9 @@
   register: docker_compose_projects
   with_items:
     - "{{docker_deployment}}"
-    - "dockerhub-webhook"
   notify:
     - restart docker compose
 
-- name: add executable mode to deploy script
-  file:
-    path: "/root/docker/dockerhub-webhook/scripts/deploy-compose"
-    mode: "0755"
 
-- name: add executable mode to deploy script wrapper
-  file:
-    path: "/root/docker/dockerhub-webhook/scripts/deploy-compose-if-newer"
-    mode: "0755"
-
-- name: copy deploy script
-  file:
-    state: link
-    force: "yes"
-    src: "/root/docker/dockerhub-webhook/scripts/deploy-compose"
-    dest: "/usr/local/bin/deploy-compose"
-
-- name: create dockerhub-webhook config
-  template:
-    src: "{{ role_path }}/templates/dockerhub-webhook/scripts/index.js.j2"
-    dest: /root/docker/dockerhub-webhook/scripts/index.js
+- include: autodeploy.yaml
+  when: "{{ docker_deployable_images }}"

@@ -1,6 +1,17 @@
 ---
 # defaults file
 
+# Docker compose projects to be deployed by ansible
+# docker_deployment:
+#   - demo
 docker_deployment: []
 
+
+# Docker images which could be deployed using autodeploy.
+# If this list is not empty, autodeploy containers
+# will be started.
+
+# docker_deployable_images:
+#   - repository: openmrs-reference-application-distro
+#     compose: demo
 docker_deployable_images: []
