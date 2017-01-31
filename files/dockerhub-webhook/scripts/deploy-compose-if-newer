@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+
+ENVIRONMENT=$1
+IMAGE=$2
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd /root/docker/$ENVIRONMENT
+result=$(docker-compose pull)
+
+if fgrep "Status: Downloaded newer image for openmrs/${IMAGE}" <($result); then
+  echo "New image downloaded for ${IMAGE}"
+  $DIR/deploy-compose $ENVIRONMENT
+else
+  echo "No newer images found"
+  exit 0
+fi

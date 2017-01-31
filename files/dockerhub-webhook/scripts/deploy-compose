@@ -1,4 +1,7 @@
 #!/bin/bash -eu
+
+# Deploy docker-compose application
+
 ENVIRONMENT=$1
 
 cd /root/docker/$ENVIRONMENT
