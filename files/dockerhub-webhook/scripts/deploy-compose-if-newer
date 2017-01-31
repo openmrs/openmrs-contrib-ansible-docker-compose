@@ -6,9 +6,9 @@ IMAGE=$2
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd /root/docker/$ENVIRONMENT
-result=$(docker-compose pull)
+result_dc=$(docker-compose pull)
 
-if fgrep "Status: Downloaded newer image for openmrs/${IMAGE}" <($result); then
+if echo "$result_dc" | fgrep "Status: Downloaded newer image for openmrs/${IMAGE}"; then
   echo "New image downloaded for ${IMAGE}"
   $DIR/deploy-compose $ENVIRONMENT
 else

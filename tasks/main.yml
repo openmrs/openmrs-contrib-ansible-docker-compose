@@ -16,6 +16,11 @@
     path: "/root/docker/dockerhub-webhook/scripts/deploy-compose"
     mode: "0755"
 
+- name: add executable mode to deploy script wrapper
+  file:
+    path: "/root/docker/dockerhub-webhook/scripts/deploy-compose-if-newer"
+    mode: "0755"
+
 - name: copy deploy script
   file:
     state: link
