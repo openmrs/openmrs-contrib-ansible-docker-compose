@@ -1,3 +1,5 @@
+- stat: path=/root/docker/dockerhub-webhook/.env
+  register: token_file
 
 - name: copy docker compose files
   copy: src="{{ role_path }}/files/{{item}}" dest="/root/docker"
@@ -28,3 +30,9 @@
   template:
     src: "{{ role_path }}/templates/dockerhub-webhook/scripts/index.js.j2"
     dest: /root/docker/dockerhub-webhook/scripts/index.js
+
+- name: generate token
+  shell: echo "TOKEN="`uuidgen` > /root/docker/dockerhub-webhook/.env
+  when: token_file.stat.exists == False
+  notify:
+    - restart docker compose
