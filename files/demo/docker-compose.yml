@@ -7,7 +7,7 @@ services:
     environment:
       MYSQL_DATABASE: ${MYSQL_DB:-openmrs}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
-      MYSQL_USER: ${MYSQL_USER:-Admin123}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
     healthcheck:
       test: "exit 0"
@@ -24,7 +24,7 @@ services:
     environment:
       DB_DATABASE: ${MYSQL_DB:-openmrs}
       DB_HOST: openmrs-referenceapplication-mysql
-      DB_USERNAME: ${MYSQL_USER:-Admin123}
+      DB_USERNAME: ${MYSQL_USER:-openmrs}
       DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
       DB_CREATE_TABLES: 'false'
       DB_AUTO_UPDATE: 'false'

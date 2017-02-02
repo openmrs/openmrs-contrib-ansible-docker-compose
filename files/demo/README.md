@@ -39,7 +39,9 @@ If you want to generate the SQL with the demo data:
   - Run `docker-compose down && docker-compose up` to restart the application.
   This will take quite a while. Wait for the application to load again.
   - Enter the DB docker container (`docker exec -it <container_db_id> bash`)
-  - From inside the container, run
+  - From inside the container, run `mysql --user=openmrs --password=Admin123 openmrs`
+  and add the triggers from <https://issues.openmrs.org/browse/ITSM-3917>
+  - From inside the container, run: 
   `mysqldump --user=openmrs --password=$PASSWORD openmrs > /tmp/dump.sql`
   - From outside the container, copy the dump file to your machine:
   `docker cp <container_db_id>:/tmp/dump.sql .`
