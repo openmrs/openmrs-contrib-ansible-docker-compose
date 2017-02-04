@@ -41,11 +41,12 @@ If you want to generate the SQL with the demo data:
   - Enter the DB docker container (`docker exec -it <container_db_id> bash`)
   - From inside the container, run `mysql --user=openmrs --password=Admin123 openmrs`
   and add the triggers from <https://issues.openmrs.org/browse/ITSM-3917>
-  - From inside the container, run: 
+  - From inside the container, run:
   `mysqldump --user=openmrs --password=$PASSWORD openmrs > /tmp/dump.sql`
   - From outside the container, copy the dump file to your machine:
   `docker cp <container_db_id>:/tmp/dump.sql .`
   - Due to <https://issues.openmrs.org/browse/SDK-201>, search on the SQL for
    `search.indexVersion` and make it empty.
+  - Also, change `atlas.stopAskingToConfigure` to `true` on the SQL file <https://talk.openmrs.org/t/new-demo-server-is-ready-for-tests/9685/12?u=cintiadr>
 
 You'll want to replace the SQL file in dbdump, but no other changes should be committed.
