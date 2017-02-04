@@ -4,3 +4,6 @@
     shell: /usr/local/bin/deploy-compose {{ item.item }}
     when: item.changed
     with_items: "{{ docker_compose_projects.results }}"
+
+  - name: restart docker autodeploy
+    shell: /usr/local/bin/deploy-compose dockerhub-webhook

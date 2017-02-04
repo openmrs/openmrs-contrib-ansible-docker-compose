@@ -1,6 +1,7 @@
 version: '2.1'
 services:
   dockerhub:
+    restart: "always"
     image: cintiadr/dockerhub-webhook
     ports:
       - "3000:3000"

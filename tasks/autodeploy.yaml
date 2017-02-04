@@ -7,7 +7,7 @@
   with_items:
     - "dockerhub-webhook"
   notify:
-    - restart docker compose
+    - restart docker autodeploy
 
 - name: add executable mode to deploy script
   file:
@@ -35,4 +35,4 @@
   shell: echo "TOKEN="`uuidgen` > /root/docker/dockerhub-webhook/.env
   when: token_file.stat.exists == False
   notify:
-    - restart docker compose
+    - restart docker autodeploy

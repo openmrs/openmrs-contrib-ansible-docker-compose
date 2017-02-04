@@ -43,7 +43,9 @@ _Note: while you are can deploy new versions of the application without infrastr
   - Add a README file. 
   - Add healthchecks to all docker containers. 
   (use docker 1.12+ and docker-compose 1.10+ to have this feature).
-  - Expose the port which should be called from the web interface. 
+  - Add a 'restart: always' to your docker containers, otherwise
+  they won't be started when the host is restarted. 
+  - Expose the port which should be called from the web interface.
   - If you want to persist docker volumes between deployments, make sure to create a `deploy.env`
   file with the following content:
 
