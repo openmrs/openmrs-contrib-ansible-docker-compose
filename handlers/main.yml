@@ -1,5 +1,5 @@
 ---
-# handlers file for cintiadr.openmrs-docker
+
   - name: restart docker compose
     shell: /usr/local/bin/deploy-compose {{ item.item }}
     when: item.changed

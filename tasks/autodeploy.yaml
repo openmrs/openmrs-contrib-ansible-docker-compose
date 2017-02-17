@@ -1,9 +1,8 @@
 - stat: path=/root/docker/dockerhub-webhook/.env
   register: token_file
 
-- name: copy docker compose files
+- name: copy autodeploy files
   copy: src="{{ role_path }}/files/{{item}}" dest="/root/docker"
-  register: docker_compose_projects
   with_items:
     - "dockerhub-webhook"
   notify:
