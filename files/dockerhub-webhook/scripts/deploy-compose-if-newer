@@ -1,17 +1,22 @@
 #!/bin/bash -eu
 
-ENVIRONMENT=$1
+ENVIRONMENTS=$(echo $1 | tr ',' ' ')
 IMAGE=$2
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd /root/docker/$ENVIRONMENT
-result_dc=$(docker-compose pull)
+for ENVIRONMENT in $ENVIRONMENTS; do
+  echo "Running environment $ENVIRONMENT"
+  (
+    cd /root/docker/$ENVIRONMENT
+    result_dc=$(docker-compose pull)
 
-if echo "$result_dc" | fgrep "Status: Downloaded newer image for openmrs/${IMAGE}"; then
-  echo "New image downloaded for ${IMAGE}"
-  $DIR/deploy-compose $ENVIRONMENT
-else
-  echo "No newer images found"
-  exit 0
-fi
+    if echo "$result_dc" | fgrep "Status: Downloaded newer image for openmrs/${IMAGE}"; then
+      echo "New image downloaded for ${IMAGE}"
+      $DIR/deploy-compose $ENVIRONMENT
+    else
+      echo "No newer images found"
+      exit 0
+    fi
+  ) > /root/docker/${ENVIRONMENT}/deploy.log 2>&1
+done
