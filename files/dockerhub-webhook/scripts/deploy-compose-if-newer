@@ -2,6 +2,7 @@
 
 ENVIRONMENTS=$(echo $1 | tr ',' ' ')
 IMAGE=$2
+FORCE_DESTROY_VOLUMES=${3:-false}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -13,7 +14,7 @@ for ENVIRONMENT in $ENVIRONMENTS; do
 
     if echo "$result_dc" | fgrep "Status: Downloaded newer image for openmrs/${IMAGE}"; then
       echo "New image downloaded for ${IMAGE}"
-      $DIR/deploy-compose $ENVIRONMENT
+      $DIR/deploy-compose $ENVIRONMENT $FORCE_DESTROY_VOLUMES
     else
       echo "No newer images found"
       exit 0

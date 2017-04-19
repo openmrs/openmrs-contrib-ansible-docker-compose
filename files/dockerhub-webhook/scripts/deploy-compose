@@ -3,13 +3,15 @@
 # Deploy docker-compose application
 
 ENVIRONMENT=$1
+FORCE_DESTROY_VOLUMES=${2:-false}
 
 cd /root/docker/$ENVIRONMENT
 docker-compose pull
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
-if [ "${DESTROY_VOLUMES}" == "false" ]; then
+
+if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
   docker-compose down
 else
   docker-compose down -v
