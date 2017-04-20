@@ -14,7 +14,7 @@ services:
       test: "exit 0"
     volumes:
       - ./dbdump:/docker-entrypoint-initdb.d
-      # - openmrs-referenceapplication-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
+      - openmrs-referenceapplication-mysql-data:/var/lib/mysql
 
   openmrs-referenceapplication:
     restart: "always"
@@ -34,6 +34,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
       timeout: 20s
+    volumes:
+      - openmrs-referenceapplication-data:/usr/local/tomcat/.OpenMRS/
 
 volumes:
   openmrs-referenceapplication-mysql-data:
+  openmrs-referenceapplication-data:
