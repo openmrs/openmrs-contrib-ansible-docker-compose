@@ -1,0 +1,36 @@
+version: '2.1'
+
+services:
+
+  addonindex:
+    restart: "always"
+    image: openmrs/addonindex:production
+    ports:
+      - "8081:8080"
+    environment:
+      - spring.elasticsearch.jest.uris=http://elasticsearch:9200
+      - bintray.username
+      - bintray.api_key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      timeout: 5s
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  elasticsearch:
+    restart: "always"
+    image: elasticsearch:5.1
+    expose:
+      - "9200"
+      - "9300"
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/"]
+      timeout: 15s
+
+volumes:
+  esdata:
