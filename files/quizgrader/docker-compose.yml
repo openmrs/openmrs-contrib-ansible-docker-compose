@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  app:
+    build:
+      - burke/quizgrader
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
