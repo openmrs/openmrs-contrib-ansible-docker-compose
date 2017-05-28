@@ -2,9 +2,11 @@ version: '2'
 
 services:
   app:
-    build:
-      - burke/quizgrader
+    image: burke/quizgrader
     ports:
-      - "80:80"
+      - "8081:80"
     environment:
       - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      timeout: 20s
