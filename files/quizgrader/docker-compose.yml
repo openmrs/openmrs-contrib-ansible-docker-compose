@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   app:
-    image: burke/quizgrader:latest
+    image: openmrs/openmrs-contrib-quizgrader:latest
     env_file:
      - .env
     ports:
