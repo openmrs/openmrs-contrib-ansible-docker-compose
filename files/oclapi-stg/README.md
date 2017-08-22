@@ -1,6 +1,6 @@
 ## Description
 
-OCL api for qa.
+OCL api for stg.
 
 Check <https://github.com/OpenConceptLab/oclapi/tree/jetstream> for details.
 

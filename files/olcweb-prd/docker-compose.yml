@@ -1,0 +1,43 @@
+version: '2.1'
+services:
+  db_web:
+    image: postgres:9.6.4
+    environment:
+      - POSTGRES_USER=ocl
+      - POSTGRES_PASSWORD=Ocl123
+    volumes:
+      - db_web_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  web:
+    image: openconceptlab/oclweb:${ENVIRONMENT-production}
+    depends_on:
+      - db_web
+    links:
+      - "db_web:dbweb.openconceptlab.org"
+    external_links:
+      - "api:api.openconceptlab.org"
+    ports:
+      - "7000:7000"
+    environment:
+      - DATABASE_URL=postgres://ocl:Ocl123@dbweb.openconceptlab.org:5432/ocl
+      - ENVIRONMENT=production
+      - WAIT_FOR=dbweb.openconceptlab.org:5432
+      - OCL_API_HOST=http://api.openconceptlab.org:8000
+      - OCL_API_TOKEN=891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6
+      - OCL_ANON_API_TOKEN=891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6
+      - OCL_API_NETWORK=oclapi_default
+      - ROOT_PASSWORD=Root123
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7000"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+volumes:
+  db_web_data:
+networks:
+  default:
+    external:
+      name: ${OCL_API_NETWORK}
