@@ -6,7 +6,7 @@ Check <https://github.com/OpenConceptLab/oclapi/tree/jetstream> for details.
 
 Please set the following variables in .env:
 
-ROOT_PASSWORD and OCL_API_TOKEN to some secret values.
+ROOT_PASSWORD and OCL_API_TOKEN to some secret values
 
 ENVIRONMENT=production
 

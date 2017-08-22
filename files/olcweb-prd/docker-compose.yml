@@ -21,7 +21,7 @@ services:
     ports:
       - "7000:7000"
     environment:
-      - DATABASE_URL=postgres://ocl:Ocl123@dbweb.openconceptlab.org:5432/ocl
+      - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - ENVIRONMENT=production
       - WAIT_FOR=dbweb.openconceptlab.org:5432
       - OCL_API_HOST=http://api.openconceptlab.org:8000
