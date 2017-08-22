@@ -6,7 +6,7 @@ Check <https://github.com/OpenConceptLab/oclweb/tree/jetstream> for details.
 
 Please set the following variables in .env:
 
-ROOT_PASSWORD to some secret value
+ROOT_PASSWORD must match the value from OCL API
 
 OCL_API_TOKEN and OCL_ANON_API_TOKEN must match the value from OCL API
 
