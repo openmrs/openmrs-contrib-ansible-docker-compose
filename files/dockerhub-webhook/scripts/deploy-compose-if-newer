@@ -12,7 +12,7 @@ for ENVIRONMENT in $ENVIRONMENTS; do
     cd /root/docker/$ENVIRONMENT
     result_dc=$(docker-compose pull)
 
-    if echo "$result_dc" | fgrep "Status: Downloaded newer image for openmrs/${IMAGE}"; then
+    if echo "$result_dc" | fgrep "Status: Downloaded newer image for ${IMAGE}"; then
       echo "New image downloaded for ${IMAGE}"
       $DIR/deploy-compose $ENVIRONMENT $FORCE_DESTROY_VOLUMES
     else

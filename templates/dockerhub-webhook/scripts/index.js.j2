@@ -2,6 +2,6 @@
 
 module.exports = {
 {% for image in docker_deployable_images %}
-  "openmrs/{{ image['repository'] }}": "deploy-compose-if-newer {{ image['compose'] }} {{ image['repository'] }}",
+  "{{ image['repository'] }}": "deploy-compose-if-newer {{ image['compose'] }} {{ image['repository'] }}",
 {% endfor %}
 }
