@@ -1,0 +1,82 @@
+version: '2.1'
+services:
+  mongo:
+    image: mongo:3.2
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  redis:
+    image: redis:3.2
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  solr:
+    image: openconceptlab/oclsolr:qa
+    volumes:
+      - solr_data:/opt/solr/server/solr/collection1/data
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  api:
+    image: openconceptlab/oclapi:qa
+    depends_on:
+      - mongo
+      - solr
+      - redis
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - ROOT_PASSWORD
+      - OCL_API_TOKEN
+      - NEW_RELIC_API_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/authtoken/token/"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+  celery:
+    image: openconceptlab/oclapi:qa
+    command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
+    depends_on:
+      - mongo
+      - solr
+      - redis
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  flower:
+    image: openconceptlab/oclapi:qa
+    command: bash run_flower.sh
+    depends_on:
+      - redis
+      - celery
+    links:
+      - "redis:redis.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+    restart: always
+    healthcheck:
+      test: "exit 0"
+volumes:
+  mongo_data:
+  solr_data:
