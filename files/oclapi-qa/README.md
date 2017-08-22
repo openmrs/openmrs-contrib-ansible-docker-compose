@@ -4,8 +4,13 @@ OCL api for qa.
 
 Check <https://github.com/OpenConceptLab/oclapi/tree/jetstream> for details.
 
-Please set ROOT_PASSWORD and OCL_API_TOKEN to some secret values.
+Please set the following variables in .env:
 
-AWS_STORAGE_BUCKET_NAME should be a bucket with write access for a user with credentials passed in AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
+ROOT_PASSWORD and OCL_API_TOKEN to some secret values.
 
-NEW_RELIC_API_KEY should be left blank for now.
+ENVIRONMENT=qa
+
+AWS_STORAGE_BUCKET_NAME should be a bucket in AWS
+AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are credentials for a user with write access to the bucket
+
+NEW_RELIC_API_KEY should be left blank for now
