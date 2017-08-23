@@ -13,14 +13,14 @@ services:
     healthcheck:
       test: "exit 0"
   solr:
-    image: openconceptlab/oclsolr:${ENVIRONMENT-production}
+    image: openconceptlab/oclsolr:${ENVIRONMENT:-production}
     volumes:
       - solr_data:/opt/solr/server/solr/collection1/data
     restart: always
     healthcheck:
       test: "exit 0"
   api:
-    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    image: openconceptlab/oclapi:${ENVIRONMENT:-production}
     depends_on:
       - mongo
       - solr
@@ -47,7 +47,7 @@ services:
       timeout: 10s
       retries: 3
   celery:
-    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    image: openconceptlab/oclapi:${ENVIRONMENT:-production}
     command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
     depends_on:
       - mongo
@@ -66,7 +66,7 @@ services:
     healthcheck:
       test: "exit 0"
   flower:
-    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    image: openconceptlab/oclapi:${ENVIRONMENT:-production}
     command: bash run_flower.sh
     depends_on:
       - redis

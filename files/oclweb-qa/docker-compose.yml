@@ -27,7 +27,7 @@ services:
       - OCL_API_HOST=https://ocl-qa.openmrs.org
       - OCL_API_TOKEN
       - OCL_ANON_API_TOKEN
-      - OCL_API_NETWORK=oclapi_default
+      - OCL_API_NETWORK=${OCL_API_NETWORK}
       - ROOT_PASSWORD
     restart: always
     healthcheck:
