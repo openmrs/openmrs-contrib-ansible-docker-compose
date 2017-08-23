@@ -1,6 +1,6 @@
 ## Description
 
-OCL api for qa.
+OCL api for stg.
 
 Check <https://github.com/OpenConceptLab/oclapi/tree/jetstream> for details.
 
@@ -8,7 +8,7 @@ Please set the following variables in .env:
 
 ROOT_PASSWORD and OCL_API_TOKEN to some secret values.
 
-ENVIRONMENT=qa
+ENVIRONMENT=staging
 
 AWS_STORAGE_BUCKET_NAME should be a bucket in AWS
 AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are credentials for a user with write access to the bucket
