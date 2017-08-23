@@ -3,32 +3,32 @@ services:
   db_web:
     image: postgres:9.6.4
     environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
+      - POSTGRES_USER=ocl
+      - POSTGRES_PASSWORD=Ocl123
     volumes:
       - db_web_data:/var/lib/postgresql/data
     restart: always
     healthcheck:
       test: "exit 0"
   web:
-    image: openconceptlab/oclweb:qa
+    image: openconceptlab/oclweb:${ENVIRONMENT-production}
     depends_on:
       - db_web
     links:
       - "db_web:dbweb.openconceptlab.org"
     external_links:
-      - "api:ocl-qa.openmrs.org"
+      - "api:api.openconceptlab.org"
     ports:
       - "7000:7000"
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@dbweb.openconceptlab.org:5432/ocl
+      - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - ENVIRONMENT=production
       - WAIT_FOR=dbweb.openconceptlab.org:5432
-      - OCL_API_HOST=https://ocl-qa.openmrs.org
-      - OCL_API_TOKEN
-      - OCL_ANON_API_TOKEN
-      - OCL_API_NETWORK=${OCL_API_NETWORK}
-      - ROOT_PASSWORD
+      - OCL_API_HOST=http://api.openconceptlab.org:8000
+      - OCL_API_TOKEN=891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6
+      - OCL_ANON_API_TOKEN=891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6
+      - OCL_API_NETWORK=oclapi_default
+      - ROOT_PASSWORD=Root123
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7000"]
