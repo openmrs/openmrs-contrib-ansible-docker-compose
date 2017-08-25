@@ -4,18 +4,26 @@
 
 ENVIRONMENT=$1
 FORCE_DESTROY_VOLUMES=${2:-false}
+FORCE_DESTROY_NETWORKS=${3:-true}
 
 cd /root/docker/$ENVIRONMENT
 docker-compose pull
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
+DESTROY_NETWORKS=${DESTROY_NETWORKS:-true}
 
-if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
-  docker-compose down
-else
-  docker-compose down -v
+downcmd="down"
+if [[ ! ("${FORCE_DESTROY_NETWORKS}" == "true" && "${DESTROY_NETWORKS}" == "true") ]]; then
+  downcmd="rm -f -s"
 fi
+
+volumes=""
+if [[ ! ("${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false") ]]; then
+  volumes="-v"
+fi
+
+docker-compose $downcmd $volumes
 
 docker-compose up -d
 
