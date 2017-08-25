@@ -2,37 +2,55 @@
 
 # Deploy docker-compose application
 
-ENVIRONMENT=$1
+ENVIRONMENTS_ARG=$1
 FORCE_DESTROY_VOLUMES=${2:-false}
 
-cd /root/docker/$ENVIRONMENT
-docker-compose pull
-
-[ -s ./deploy.env ] && source ./deploy.env
-DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
-
-if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
-  docker-compose down
-else
-  docker-compose down -v
-fi
-
-docker-compose up -d
-
-containers=$(docker-compose ps -q)
-n=0
-until [ $n -ge 30 ]
+ENVIRONMENTS=${ENVIRONMENTS_ARG//,/ }
+for ((i = ${#ENVIRONMENTS[@]} - 1;i >= 0;i--))
 do
-  echo "Verifying if docker containers ${containers} are healthy"
-  health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers | sort -u )
-  echo "Status found: "${health_check}
-  test "${health_check}" = '"healthy"' && exit 0
-  echo "Waiting 15s"
-  n=$[$n+1]
-  sleep 15
+  ENVIRONMENT = ${ENVIRONMENTS[i]}
+
+  cd /root/docker/$ENVIRONMENT
+  docker-compose pull
+
+  [ -s ./deploy.env ] && source ./deploy.env
+  DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
+
+  if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
+    docker-compose down
+  else
+    docker-compose down -v
+  fi
 done
 
-echo "####################################################"
-docker logs -f
+health_check = '"healthy"'
+for ENVIRONMENT in ${ENVIRONMENTS}
+do
+  if [ "$health_check" != '"healthy"' ]
+  then
+    echo "####################################################"
+    docker logs -f
 
-exit 1
+    exit 1
+  fi
+  
+  cd /root/docker/$ENVIRONMENT
+  
+  docker-compose up -d
+  
+  containers=$(docker-compose ps -q)
+  n=0
+  until [ $n -ge 30 ]
+  do
+    echo "Verifying if docker containers ${containers} are healthy"
+    health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers | sort -u )
+    echo "Status found: "${health_check}
+    if [ "${health_check}" = '"healthy"' ]
+    then
+      break
+    fi
+    echo "Waiting 15s"
+    n=$[$n+1]
+    sleep 15
+  done
+done
