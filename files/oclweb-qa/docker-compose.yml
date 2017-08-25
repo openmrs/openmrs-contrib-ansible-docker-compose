@@ -16,18 +16,15 @@ services:
       - db_web
     links:
       - "db_web:dbweb.openconceptlab.org"
-    external_links:
-      - "api:api.openconceptlab.org"
     ports:
       - "7000:7000"
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - ENVIRONMENT=production
       - WAIT_FOR=dbweb.openconceptlab.org:5432
-      - OCL_API_HOST=http://api.openconceptlab.org:8000
+      - OCL_API_HOST=${OCL_API_HOST-http://172.17.0.1:8000}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
       - OCL_ANON_API_TOKEN=${OCL_ANON_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
-      - OCL_API_NETWORK=oclapi_default
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
     restart: always
     healthcheck:
@@ -37,7 +34,3 @@ services:
       retries: 3
 volumes:
   db_web_data:
-networks:
-  default:
-    external:
-      name: ${OCL_API_NETWORK-oclapi_default}
