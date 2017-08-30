@@ -13,5 +13,7 @@ POSTGRES_USER=ocl
 POSTGRES_PASSWORD=<someSecret>
 OCL_API_TOKEN=<apiToken>
 OCL_ANON_API_TOKEN=<apiToken>
-OCL_API_HOST=https://oclapi-stg.openmrs.org
+OCL_API_HOST=https://oclapi.openmrs.org
+EMAIL_HOST_PASSWORD=<passwordForNoReplyAtOpenconceptlabDotOrg>
+SECRET_KEY=<someSecret2>
 ```
