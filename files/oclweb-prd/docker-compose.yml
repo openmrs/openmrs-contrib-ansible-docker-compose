@@ -21,7 +21,7 @@ services:
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - WAIT_FOR=dbweb.openconceptlab.org:5432
-      - ENVIRONMENT=${ENVIRONMENT-production}
+      - ENVIRONMENT=production
       - OCL_API_HOST=${OCL_API_HOST-http://172.17.0.1:8000}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
       - OCL_ANON_API_TOKEN=${OCL_ANON_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
