@@ -33,6 +33,6 @@ do
 done
 
 echo "####################################################"
-docker logs -f
+docker-compose logs
 
 exit 1
