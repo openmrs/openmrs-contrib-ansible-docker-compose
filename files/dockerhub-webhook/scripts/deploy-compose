@@ -6,6 +6,13 @@ ENVIRONMENT=$1
 FORCE_DESTROY_VOLUMES=${2:-false}
 
 cd /root/docker/$ENVIRONMENT
+
+echo "Removing unused images if any"
+EXITED_IMAGES=$(docker ps -a -f status=exited -q)
+if [ "${EXITED_IMAGES}" != "" ]; then
+  docker rm ${EXITED_IMAGES}
+fi
+
 docker-compose pull
 
 [ -s ./deploy.env ] && source ./deploy.env
