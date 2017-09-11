@@ -38,5 +38,18 @@ services:
       interval: 1m30s
       timeout: 10s
       retries: 3
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - web
+    volumes:
+      - db_web_data:/db_web_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/db_web_data:dbweb
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 volumes:
   db_web_data:
