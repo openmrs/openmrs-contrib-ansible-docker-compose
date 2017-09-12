@@ -78,20 +78,21 @@ services:
     restart: always
     healthcheck:
       test: "exit 0"
-  backup:
-    image: openmrs/cron-backup
-    depends_on:
-      - api
-    volumes:
-      - mongo_data:/mongo_data
-      - solr_data:/solr_data
-      - ${BACKUP_DIR-./backups}:/backup
-    environment:
-      - DIRS=/mongo_data:mongo,/solr_data:solr
-      - SCHEDULE=0 0 * * *
-    restart: always
-    healthcheck:
-      test: "exit 0"
+#  Disabled backup for QA
+#  backup:
+#    image: openmrs/cron-backup
+#    depends_on:
+#      - api
+#    volumes:
+#      - mongo_data:/mongo_data
+#      - solr_data:/solr_data
+#      - ${BACKUP_DIR-./backups}:/backup
+#    environment:
+#      - DIRS=/mongo_data:mongo,/solr_data:solr
+#      - SCHEDULE=0 0 * * *
+#    restart: always
+#    healthcheck:
+#      test: "exit 0"
 volumes:
   mongo_data:
   solr_data:

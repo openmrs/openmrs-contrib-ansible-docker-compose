@@ -15,7 +15,6 @@ AWS_STORAGE_BUCKET_NAME=<write_access_aws_s3_bucket_name>
 OCL_API_TOKEN=<someSecret2>
 SECRET_KEY=<someSecret3>
 EMAIL_HOST_PASSWORD=<password_for_no_reply_at_openconceptlab_org>
-BACKUP_DIR=/opt/backups
 ```
 
   - ROOT_PASSWORD, OCL_API_TOKEN, SECRET_KEY to some secret values.

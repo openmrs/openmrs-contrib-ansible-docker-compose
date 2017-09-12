@@ -16,5 +16,4 @@ OCL_ANON_API_TOKEN=<apiToken>
 OCL_API_HOST=https://oclapi.openmrs.org
 EMAIL_HOST_PASSWORD=<passwordForNoReplyAtOpenconceptlabDotOrg>
 SECRET_KEY=<someSecret2>
-BACKUP_DIR=/opt/backups
 ```
