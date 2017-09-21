@@ -1,0 +1,51 @@
+version: '3'
+ 
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:3.4
+    volumes:
+      - openhim-data:/data/db
+    restart: always
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      interval: 1m
+      timeout: 3s
+      retries: 3
+ 
+  openhim-core:
+    container_name: openhim-core
+    image: jembi/openhim-core
+    environment:
+      mongo_url: mongodb://mongo/openhim
+      mongo_atnaUrl: "mongodb://mongo/openhim"
+    ports:
+      - "${OPENHIM_API_PORT-8080}:8080"
+      - "${OPENHIM_HTTPS_PORT-5000}:5000"
+      # Don't expose an insecure port unless required
+      # - "${OPENHIM_HTTP_PORT-5001}:5001"
+    depends_on:
+      - mongo
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8080/heartbeat"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+ 
+  openhim-console:
+    container_name: openhim-console
+    image: jembi/openhim-console
+    ports:
+      - "${OPENHIM_CONSOLE_PORT-80}:80"
+    volumes:
+      - ./openhim-console-config.json:/usr/share/nginx/html/config/default.json
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/config/default.json"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  openhim-data:
