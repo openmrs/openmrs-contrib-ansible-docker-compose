@@ -1,5 +1,5 @@
 version: '3'
- 
+
 services:
   mongo:
     container_name: mongo
@@ -12,7 +12,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 3
- 
+
   openhim-core:
     container_name: openhim-core
     image: jembi/openhim-core
@@ -32,7 +32,7 @@ services:
       interval: 1m30s
       timeout: 5s
       retries: 3
- 
+
   openhim-console:
     container_name: openhim-console
     image: jembi/openhim-console
@@ -46,6 +46,20 @@ services:
       interval: 1m30s
       timeout: 5s
       retries: 3
+
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - openhim-core
+    volumes:
+      - openhim-data:/mongo_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mongo_data:mongo
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 
 volumes:
   openhim-data:
