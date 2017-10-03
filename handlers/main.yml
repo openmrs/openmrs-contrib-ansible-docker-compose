@@ -7,3 +7,4 @@
 
   - name: restart docker autodeploy
     shell: /usr/local/bin/deploy-compose dockerhub-webhook
+    when: "{{ docker_deployable_images }}"

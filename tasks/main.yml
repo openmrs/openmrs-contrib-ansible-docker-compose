@@ -12,4 +12,3 @@
 
 
 - include: autodeploy.yaml
-  when: "{{ docker_deployable_images }}"
