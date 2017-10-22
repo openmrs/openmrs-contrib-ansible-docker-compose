@@ -38,6 +38,22 @@ services:
     volumes:
       - openmrs-referenceapplication-data:/usr/local/tomcat/.OpenMRS/
 
+  backup:
+    image: openmrs/cron-backup:1.0.0
+    depends_on:
+      - openmrs-referenceapplication
+    volumes:
+      - openmrs-referenceapplication-mysql-data:/mysql_data
+      - openmrs-referenceapplication-data:/openmrs_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mysql_data:mysql,/openmrs_data:openmrs
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
+
 volumes:
   openmrs-referenceapplication-mysql-data:
   openmrs-referenceapplication-data:
