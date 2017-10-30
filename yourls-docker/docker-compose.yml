@@ -1,0 +1,26 @@
+---
+version: '3'
+services:
+  db:
+    image: mysql:5.6
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_USER}
+
+  yourls:
+    image: darmagedon/yourls:latest
+    depends_on:
+      - db
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      YOURLS_DB_USER: ${YOURLS_DB_USER}
+      YOURLS_DB_PASS: ${YOURLS_DB_PASS}
+      YOURLS_DB_NAME: ${YOURLS_DB_NAME}
+      YOURLS_DB_HOST: ${YOURLS_DB_HOST}
+      YOURLS_DEBUG: ${YOURLS_DEBUG}
+      YOURLS_USERS: ${YOURLS_USERS}
+      YOURLS_SITE: ${YOURLS_SITE}

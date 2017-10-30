@@ -1,0 +1,5 @@
+# Instructions
+- COPY .env.template to the same directory where docker-compose exists as .env
+- Change the variables according to your wish
+- docker-compose up
+:)
