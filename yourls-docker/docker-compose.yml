@@ -4,23 +4,47 @@ services:
   db:
     image: mysql:5.6
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysqlfordocker}
+      MYSQL_DATABASE: ${YOURLS_DB_NAME:-dockerdb}
+      MYSQL_USER: ${YOURLS_DB_USER:-docker}
+      MYSQL_PASSWORD: ${YOURLS_DB_PASS:-thisispassword}
+    volumes:
+      - ${BACKUP_DIR:-./backup:/var/lib/mysql}
+    ports:
+      - 3306:3306
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
 
   yourls:
     image: darmagedon/yourls:latest
     depends_on:
       - db
     ports:
-      - 80:80
-      - 443:443
+      - 8848:80
     environment:
-      YOURLS_DB_USER: ${YOURLS_DB_USER}
-      YOURLS_DB_PASS: ${YOURLS_DB_PASS}
-      YOURLS_DB_NAME: ${YOURLS_DB_NAME}
-      YOURLS_DB_HOST: ${YOURLS_DB_HOST}
-      YOURLS_DEBUG: ${YOURLS_DEBUG}
-      YOURLS_USERS: ${YOURLS_USERS}
-      YOURLS_SITE: ${YOURLS_SITE}
+      YOURLS_DB_USER: ${YOURLS_DB_USER:-docker}
+      YOURLS_DB_PASS: ${YOURLS_DB_PASS:-thisispassword}
+      YOURLS_DB_NAME: ${YOURLS_DB_NAME:-dockerdb}
+      YOURLS_DB_HOST: ${YOURLS_DB_HOST:-db}
+      YOURLS_DEBUG: ${YOURLS_DEBUG:-true}
+      YOURLS_USERS: ${YOURLS_USERS:-default:default}
+      YOURLS_SITE: ${YOURLS_SITE:-http://localhost}
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/admin/"]
+
+
+  backup:
+    image: openmrs/cron-backup:1.0.0
+    depends_on:
+      - db
+    volumes:
+      - ${BACKUP_DIR:-./backup}:/mysql_data
+    environment:
+      - DIRS=/mysql_data:mysql
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
