@@ -9,13 +9,10 @@ services:
       MYSQL_USER: ${YOURLS_DB_USER:-docker}
       MYSQL_PASSWORD: ${YOURLS_DB_PASS:-thisispassword}
     volumes:
-      - ${BACKUP_DIR:-./backup:/var/lib/mysql}
-    ports:
-      - 3306:3306
+      - mysql-data:/var/lib/mysql
     restart: always
     healthcheck:
       test: "exit 0"
-
 
   yourls:
     image: darmagedon/yourls:latest
@@ -35,16 +32,18 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/admin/"]
 
-
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrs/cron-backup
     depends_on:
       - db
     volumes:
-      - ${BACKUP_DIR:-./backup}:/mysql_data
+      - mysql-data:/mysql_data
     environment:
       - DIRS=/mysql_data:mysql
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
       test: "exit 0"
+
+volumes:
+  mysql-data:
