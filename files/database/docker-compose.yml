@@ -1,22 +1,22 @@
-version: '2.1'
-
+---
+version: '3'
 services:
-  mysql:
-    restart: "always"
+  db:
     image: mysql:5.6
     ports:
       - "3306:3306"
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    command: "mysqld --character-set-server=utf8 --collation-server=utf8_bin --default-storage-engine=INNODB --max_allowed_packet=256M --innodb_log_file_size=650MB --transaction-isolation=READ-COMMITTED --binlog_format=row"
     environment:
-      MYSQL_DATABASE: ${MYSQL_DB:-openmrs}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
-      MYSQL_USER: ${MYSQL_USER:-openmrs}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-mysqlfordocker}
+      MYSQL_DATABASE: ${DB_NAME:-dockerdb}
+      MYSQL_USER: ${DB_USERNAME:-docker}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-thisispassword}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./dbdump:/docker-entrypoint-initdb.d
+    restart: always
     healthcheck:
       test: "exit 0"
-    volumes:
-      - ./dbdump:/docker-entrypoint-initdb.d
-      - mysql-data:/var/lib/mysql  
 
 volumes:
   mysql-data:
