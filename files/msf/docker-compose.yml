@@ -39,7 +39,7 @@ services:
       - openmrs-referenceapplication-data:/usr/local/tomcat/.OpenMRS/
 
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrs/cron-backup:latest
     depends_on:
       - openmrs-referenceapplication
     volumes:
