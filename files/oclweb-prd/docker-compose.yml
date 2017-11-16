@@ -32,6 +32,7 @@ services:
       - EMAIL_HOST_USER=${EMAIL_HOST_USER-no-reply@openconceptlab.org}
       - EMAIL_HOST_PASSWORD
       - SECRET_KEY
+      - SENTRY_DSN_KEY
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7000"]
