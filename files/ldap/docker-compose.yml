@@ -10,7 +10,8 @@ services:
       LDAP_ORGANIZATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
-
+    healthcheck:
+      test: "exit 0"
     volumes:
       - config:/etc/ldap/slapd.d
       - database:/var/lib/ldap
