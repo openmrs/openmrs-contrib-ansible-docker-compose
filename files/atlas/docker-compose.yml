@@ -32,7 +32,7 @@ services:
     ports:
       - 8548:80
     volumes:
-      - atlas-data:/var/www/html/atlas
+      - atlas-storage:/var/www/html/atlas/app/storage
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/markerSites/"]
@@ -43,9 +43,10 @@ services:
       - db
     volumes:
       - mysql-data:/mysql_data
-      - atlas-data:/atlas_data
+      - atlas-storage:/atlas-storage
+      - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mysql_data:mysql
+      - DIRS=/mysql_data:atlas_mysql,/atlas-storage:atlas_storage
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
@@ -53,4 +54,4 @@ services:
 
 volumes:
   mysql-data:
-  atlas-data:
+  atlas-storage:
