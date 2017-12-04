@@ -16,7 +16,21 @@ services:
       test: "exit 0"
     volumes:
       - ./dbdump:/docker-entrypoint-initdb.d
-      - mysql-data:/var/lib/mysql  
+      - mysql-data:/var/lib/mysql
+
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - mysql
+    volumes:
+      - mysql-data:/mysql_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mysql_data:mysql_data
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 
 volumes:
   mysql-data:

@@ -15,6 +15,21 @@ services:
     volumes:
       - config:/etc/ldap/slapd.d
       - database:/var/lib/ldap
+
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - ldap
+    volumes:
+      - config:/ldap_config_data
+      - database:/ldap_database_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 volumes:
   config:
   database:

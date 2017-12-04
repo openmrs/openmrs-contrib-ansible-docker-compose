@@ -38,6 +38,7 @@ services:
       - db
     volumes:
       - mysql-data:/mysql_data
+      - ${BACKUP_DIR-./backups}:/backup
     environment:
       - DIRS=/mysql_data:mysql
       - SCHEDULE=0 0 * * *
