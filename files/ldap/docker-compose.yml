@@ -1,7 +1,16 @@
 ---
 version: '3'
 services:
+  web2ldap:
+    restart: "always"
+    image: jlrigau/web2ldap
+    ports:
+      - 1760:1760
+    healthcheck:
+      test: "wget -O /dev/null localhost:1760/web2ldap/"
+      timeout: 20s
   ldap:
+    restart: "always"
     image: osixia/openldap:1.1.10
     ports:
       - 389:389
