@@ -3,7 +3,7 @@ version: '3'
 services:
   ldap:
     restart: "always"
-    image: osixia/openldap:1.1.10
+    image: osixia/openldap:1.1.8
     ports:
       - 636:636
     environment:
