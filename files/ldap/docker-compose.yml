@@ -1,30 +1,24 @@
 ---
 version: '3'
 services:
-
-  web2ldap:
-    restart: "always"
-    image: jlrigau/web2ldap
-    ports:
-      - 1760:1760
-    healthcheck:
-      test: "wget -O /dev/null localhost:1760/web2ldap/"
-      timeout: 20s
-
   ldap:
     restart: "always"
-    image: osixia/openldap:1.1.8
+    image: osixia/openldap:1.1.10
     ports:
       - 636:636
     environment:
       LDAP_ORGANIZATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
+      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
+      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
+      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
     healthcheck:
       test: "exit 0"
     volumes:
       - config:/etc/ldap/slapd.d
       - database:/var/lib/ldap
+      - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   backup:
     image: openmrs/cron-backup
