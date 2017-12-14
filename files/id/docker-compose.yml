@@ -21,8 +21,7 @@ services:
     environment:
       NODE_ENV: "production"
     depends_on:
-      mongodb:
-          condition: service_healthy
+      - mongodb
     healthcheck:
       test: ["CMD", "curl", "localhost:3000"]
       interval: 1m30s
