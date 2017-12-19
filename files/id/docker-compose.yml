@@ -31,6 +31,20 @@ services:
       - id-globalnavbar:/opt/id/app/user-modules/openmrs-contrib-id-globalnavbar/data
       - id-logs:/opt/id/logs
 
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - mongodb
+    volumes:
+      - mongo-data:/mongo_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mongo_data:mongo_data
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
 
 volumes:
   mongo-data:
