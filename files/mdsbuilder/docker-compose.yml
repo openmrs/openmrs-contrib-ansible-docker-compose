@@ -18,7 +18,7 @@ services:
 
   web:
     restart: "always"
-    image: openmrs/openmrs-distro-platform:2.0.7-SNAPSHOT
+    image: openmrs/openmrs-distro-mdsbuilder
     depends_on:
       - db
     ports:
