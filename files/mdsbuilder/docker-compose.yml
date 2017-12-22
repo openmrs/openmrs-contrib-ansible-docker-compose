@@ -46,7 +46,7 @@ services:
     volumes:
       - db-data:/db_data
       - web-data:/web_data
-      - ${BACKUP_DIR-./backups}:/backup
+      - ${BACKUP_DIR-/opt/backups}:/backup
     environment:
       - DIRS=/db_data:db,/web_data:web
       - SCHEDULE=0 0 * * *
