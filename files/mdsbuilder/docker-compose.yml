@@ -38,6 +38,22 @@ services:
       - web-data:/usr/local/tomcat/.OpenMRS
       - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in web-data
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in web-data
+
+  backup:
+    image: openmrs/cron-backup:latest
+    depends_on:
+      - web
+    volumes:
+      - db-data:/db_data
+      - web-data:/web_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/db_data:db,/web_data:web
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
 volumes:
   db-data:
   web-data:
