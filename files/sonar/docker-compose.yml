@@ -10,8 +10,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
       MYSQL_USER: ${MYSQL_USER:-openmrs}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
-    ports:
-      - 3306:3306
     healthcheck:
       test: "exit 0"
     volumes:
