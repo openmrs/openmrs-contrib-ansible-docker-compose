@@ -21,10 +21,9 @@ services:
     depends_on:
      mysql:
        condition: service_healthy
-    image: sonarqube:4.5.7
+    image: sonarqube:6.7
     ports:
       - 9000:9000
-      - 9092:9092
     environment:
       SONARQUBE_JDBC_USERNAME: ${MYSQL_USER:-openmrs}
       SONARQUBE_JDBC_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
