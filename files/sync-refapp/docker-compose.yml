@@ -36,6 +36,8 @@ services:
       timeout: 20s
     volumes:
       - openmrs-referenceapplication-data:/usr/local/tomcat/.OpenMRS/
+      - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
+      - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
 
 volumes:
   openmrs-referenceapplication-mysql-data:
