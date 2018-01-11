@@ -23,7 +23,7 @@ services:
       WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT:-loggedinsalt}
       WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:-noncesalt}
     volumes:
-      - wordpress-data:/var/www/html
+      - wordpress-content:/var/www/html/wp-content
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
 
@@ -48,10 +48,10 @@ services:
       - wordpress
     volumes:
       - mysql-data:/mysql_data
-      - wordpress-data:/wordpress_data
+      - wordpress-content:/wordpress_content
       - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mysql_data:mysql,/wordpress_data:wordpress_storage
+      - DIRS=/mysql_data:mysql,/wordpress_contnet:wordpress
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
@@ -59,4 +59,4 @@ services:
 
 volumes:
   mysql-data:
-  wordpress-data:
+  wordpress-content:
