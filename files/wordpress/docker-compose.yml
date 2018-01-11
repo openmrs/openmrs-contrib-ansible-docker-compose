@@ -12,7 +12,7 @@ services:
     environment:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-testing123}
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-openmrs}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-openmrs}
       WORDPRESS_AUTH_KEY: ${WORDPRESS_AUTH_KEY:-authkeysalt}
       WORDPRESS_SECURE_AUTH_KEY: ${WORDPRESS_SECURE_AUTH_KEY:-secureauthkeysalt}
@@ -24,7 +24,6 @@ services:
       WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:-noncesalt}
     volumes:
       - wordpress-data:/var/www/html
-      - ./dbdump:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
 
@@ -35,9 +34,10 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-testingroot123}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-testing123}
       MYSQL_USER: ${MYSQL_USER:-openmrs}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-openmrs}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./dbdump:/docker-entrypoint-initdb.d
     healthcheck:
       test: "exit 0"
 
