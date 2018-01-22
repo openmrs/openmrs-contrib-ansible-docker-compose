@@ -59,20 +59,20 @@ services:
       - redis
 
   backup:
-      image: openmrs/cron-backup
-      depends_on:
-        - db
-      volumes:
-        - postgres-data:/postgres_data
-        - redis-data:/redis_data
-        - discourse-data:/discourse_data
-        - ${BACKUP_DIR-./backups}:/backup
-      environment:
-        - DIRS=/postgres_data:postgres,/discourse_data:discourse,/redis_data:redis
-        - SCHEDULE=0 0 * * *
-      restart: always
-      healthcheck:
-        test: "exit 0"
+    image: openmrs/cron-backup
+    depends_on:
+      - db
+    volumes:
+      - postgres-data:/postgres_data
+      - redis-data:/redis_data
+      - discourse-data:/discourse_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/postgres_data:postgres,/discourse_data:discourse,/redis_data:redis
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 
 
 volumes:
