@@ -38,6 +38,7 @@ services:
       - openmrs-referenceapplication-data:/usr/local/tomcat/.OpenMRS/
       - /usr/local/tomcat/.OpenMRS/modules/ # do not store modules in data
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in data
+      - ./configuration/:/usr/local/tomcat/.OpenMRS/configuration/
 
 volumes:
   openmrs-referenceapplication-mysql-data:
