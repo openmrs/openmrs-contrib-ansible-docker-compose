@@ -1,0 +1,81 @@
+version: '3'
+
+services:
+  postgresql:
+    restart: 'always'
+    image: 'postgres:9.6-alpine'
+    volumes: 
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discoursedb}
+      POSTGRES_USER: ${POSTGRES_USER:-discourse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openmrs1234}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  redis:
+    restart: 'always'
+    image: 'redis:4.0-alpine'
+    volumes: 
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  discourse:
+    restart: 'always'
+    image: 'bitnami/discourse:1.8.11-r1'
+    ports:
+      - '8848:3000'
+    volumes:
+      - discourse-data:/bitnami
+    environment:
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-localuser}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-hello1234}
+      SMTP_TLS: ${SMTP_TLS:-true}
+      DISCOURSE_POSTGRESQL_USERNAME: ${POSTGRES_USER:-discourse}
+      DISCOURSE_POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-openmrs1234}
+      DISCOURSE_EMAIL: ${DISCOURSE_EMAIL:-hello@openmrs.org}
+      DISCOURSE_SITENAME: ${DISCOURSE_SITENAME:-Discourse}
+      POSTGRESQL_ROOT_USER: ${POSTGRES_USER:-discourse} 
+      POSTGRESQL_ROOT_PASSWORD: ${POSTGRES_PASSWORD:-openmrs1234}
+      DISCOURSE_POSTGRESQL_NAME: ${POSTGRES_DB:-discoursedb}
+      POSTGRESQL_HOST: postgresql
+      REDIS_HOST: redis
+    healthcheck:
+      test: ["CMD", "curl", "localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - postgresql
+      - redis
+
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - db
+    volumes:
+      - postgres-data:/postgres_data
+      - redis-data:/redis_data
+      - discourse-data:/discourse_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/postgres_data:postgres,/discourse_data:discourse,/redis_data:redis
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
+
+volumes:
+  postgres-data:
+  redis-data:
+  discourse-data: 
