@@ -22,6 +22,19 @@ services:
       - database:/var/lib/ldap
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
+  mantainance:
+    restart: always
+    image: darmagedon/berkley-db-docker-cron
+    depends_on:
+      - ldap
+    volumes:
+      - database:/ldap_database
+    environment:
+      - DIRS=/ldap_database
+      - SCHEDULE=00 01 * * *
+    heathcheck:
+      test: "exit 0"
+
   backup:
     image: openmrs/cron-backup
     depends_on:
