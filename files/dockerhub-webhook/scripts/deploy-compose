@@ -4,6 +4,7 @@
 
 ENVIRONMENT=$1
 FORCE_DESTROY_VOLUMES=${2:-false}
+FORCE_RESTART=${3:-false}
 
 cd /root/docker/$ENVIRONMENT
 
@@ -19,12 +20,19 @@ docker-compose pull
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
 
 if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
-  docker-compose down
-else
-  docker-compose down -v
-fi
+  echo "Keeping volumes"
 
-docker-compose up -d
+  compose_params=""
+  if [[ "$FORCE_RESTART" == "true" ]]; then
+    echo "Forcing restarts"
+    compose_params="--force-recreate"
+  fi
+  docker-compose up -d --always-recreate-deps --no-build --remove-orphans ${compose_params}
+else
+  echo "Recreating all images and volumes"
+  docker-compose down -v
+  docker-compose up -d --no-build
+fi
 
 containers=$(docker-compose ps -q)
 n=0
