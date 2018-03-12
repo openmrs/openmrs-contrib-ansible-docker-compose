@@ -36,6 +36,19 @@ services:
     restart: always
     healthcheck:
       test: "exit 0"
+  checkpoint:
+    image: openmrs/cron-backup
+    depends_on:
+      - ldap
+    volumes:
+      - database:/ldap_database_data
+      - ./scripts:/scripts
+    environment:
+      - SCRIPT=/scripts/ldap-mantainance.sh
+      - SCHEDULE=0 1 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 volumes:
   config:
   database:
