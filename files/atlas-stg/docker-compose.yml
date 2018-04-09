@@ -23,19 +23,21 @@ services:
       DB_NAME: ${DB_NAME:-atlasdb}
       DB_USERNAME: ${DB_USERNAME:-atlas}
       DB_PASSWORD: ${DB_PASSWORD:-iamatlas}
-      TIME_ZONE: ${TIME_ZONE:-America/New_York}
-      PING_DELETE_SECRET: ${PING_DELETE_SECRET:-secret}
-      API_KEY: ${API_KEY:-1234567890abcdef}
-      SITE_KEY: ${SITE_KEY:-localhost}
-      ID_HOST: ${ID_HOST:-http://localhost}
-      SITE_URL: ${SITE_URL:-http://localhost}
+      LDAP_URI: ${LDAP_URI:-ldaps://ldap-stg.openmrs.org:636}
+      LDAP_AUTH_USER: ${LDAP_AUTH_USER:-atlas}
+      LDAP_AUTH_PASSWORD: ${LDAP_AUTH_PASSWORD:-magic}
+      LDAP_USERS_GROUP: ${LDAP_USERS_GROUP:-atlas-users}
+      LDAP_ADMIN_GROUP: ${LDAP_ADMIN_GROUP:-atlas-administrators}
+      MAIL_HOST: ${MAIL_HOST:-smtp.mandrillapp.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_AUTH: ${MAIL_AUTH:-true}
+      MAIL_USER: ${MAIL_USER:-infrastructure@openmrs.org}
+      MAIL_PASS: ${MAIL_PASS:-magic}
     ports:
-      - 8548:80
-    volumes:
-      - atlas-storage:/var/www/html/atlas/app/storage
+      - 8548:3000
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/markerSites/"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/markerSites/"]
 
   backup:
     image: openmrs/cron-backup
@@ -43,10 +45,9 @@ services:
       - db
     volumes:
       - mysql-data:/mysql_data
-      - atlas-storage:/atlas-storage
       - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mysql_data:atlas_mysql,/atlas-storage:atlas_storage
+      - DIRS=/mysql_data:atlas_mysql
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
@@ -54,4 +55,3 @@ services:
 
 volumes:
   mysql-data:
-  atlas-storage:
