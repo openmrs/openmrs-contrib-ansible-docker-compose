@@ -27,7 +27,7 @@ if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]
     echo "Forcing restarts"
     compose_params="--force-recreate"
   fi
-  docker-compose up -d --always-recreate-deps --no-build --remove-orphans ${compose_params}
+  docker-compose up -d --no-build --remove-orphans ${compose_params}
 else
   echo "Recreating all images and volumes"
   docker-compose down -v
