@@ -13,8 +13,8 @@ services:
     healthcheck:
       test: "exit 0"
     volumes:
-      # - ./dbdump:/docker-entrypoint-initdb.d
-      # - openmrs-referenceapplication-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
+       - openmrs-referenceapplication-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
+       # - ./dbdump:/docker-entrypoint-initdb.d
 
   openmrs-referenceapplication:
     restart: "always"
