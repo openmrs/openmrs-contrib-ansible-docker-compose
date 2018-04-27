@@ -13,8 +13,8 @@ services:
     healthcheck:
       test: "exit 0"
     volumes:
-       - openmrs-referenceapplication-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
-       # - ./dbdump:/docker-entrypoint-initdb.d
+       - ./dbdump:/docker-entrypoint-initdb.d
+       - db-data:/var/lib/mysql
 
   openmrs-referenceapplication:
     restart: "always"
@@ -31,9 +31,16 @@ services:
       DB_CREATE_TABLES: 'false'
       DB_AUTO_UPDATE: 'false'
       MODULE_WEB_ADMIN: 'false'
+    volumes:
+      - web-data:/usr/local/tomcat/.OpenMRS
+      - modules-data:/usr/local/tomcat/.OpenMRS/modules/ # used to mount persistent docker volume for modules
+      - owa-data:/usr/local/tomcat/.OpenMRS/owa/     # used to mount persistent docker volume for owa
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
       timeout: 20s
 
 volumes:
-  openmrs-referenceapplication-mysql-data:
+  db-data:
+  web-data:
+  modules-data:
+  owa-data:
