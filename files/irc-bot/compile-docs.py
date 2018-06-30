@@ -2,28 +2,33 @@
 
 # Auto-generates docs from conf file
 # Requires OpenMRSBot.conf in current working directory
+from jinja2 import Template
 
 ALIAS_IDENTIFIER = 'supybot.plugins.Alias.aliases.'
 LOCKING_IDENTIFIER = '.locked'
 
-def printAliases(f_readme):
+def loadAliases():
+    ret = ''
+
     with open('OpenMRSBot.conf', 'r') as f_config:
         for line in f_config.readlines():
             if line.startswith(ALIAS_IDENTIFIER) and LOCKING_IDENTIFIER not in line:
-                f_readme.write('- {}'.format(line[len(ALIAS_IDENTIFIER):]))
+                ret += '- {}'.format(line[len(ALIAS_IDENTIFIER):])
 
+    return ret
+
+
+template_str = ''
+with open('README.jinja', 'r') as f:
+    for line in f.readlines():
+        template_str += line
+
+template = Template(template_str)
+docs_compiled = template.render(
+    aliaslist=loadAliases()
+)
 
 with open('README.md', 'w') as f:
-    f.write('# OpenMRS IRC Bot\n\n')
-    f.write('## What does OpenMRS IRC bot do?\n\n')
-    f.write('### Aliases:\n\n')
-    f.write(
-        'Aliases are commands used to interact with OpenMRSBot.\
-        Some commands take arguments.\
-        Arguments are documented with symbols $1 $2 $3 etc. for arguments 1, 2, 3, etc.\
-        Users can invoke a command in the IRC channel with the `!` symbol.\
-        Example (use the google alias to return a url to the google search for keyword openmrs): `!google openmrs`\n\n'
-    )
+    f.write(docs_compiled)
 
 
-    printAliases(f)

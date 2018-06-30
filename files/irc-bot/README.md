@@ -4,7 +4,7 @@
 
 ### Aliases:
 
-Aliases are commands used to interact with OpenMRSBot.        Some commands take arguments.        Arguments are documented with symbols $1 $2 $3 etc. for arguments 1, 2, 3, etc.        Users can invoke a command in the IRC channel with the `!` symbol.        Example (use the google alias to return a url to the google search for keyword openmrs): `!google openmrs`
+Aliases are commands used to interact with OpenMRSBot. Some commands take arguments. Arguments are documented with symbols $1 $2 $3 etc. for arguments 1, 2, 3, etc. Users can invoke a command in the IRC channel with the `!` symbol. Example (use the google alias to return a url to the google search for keyword openmrs): `!google openmrs`
 
 - jira: reply [web title https://tickets.openmrs.org/browse/$1] - https://tickets.openmrs.org/browse/$1
 - codereview: reply Code review $1 is at https://source.openmrs.org/cru/$1
