@@ -1,8 +1,6 @@
 # OpenMRS IRC Bot
 
-## What does OpenMRS IRC bot do?
-
-### Herald
+## Herald
 
 The herald message is displayed to users as they enter the chatroom. Current herald message is:
 
@@ -10,7 +8,7 @@ The herald message is displayed to users as they enter the chatroom. Current her
 Welcome to the OpenMRS channel.  Type /msg OpenMRSBot !list for a list of my commands.  Type /msg OpenMRSBot !help ___ for help with a command
 ```
 
-### Aliases
+## Aliases
 
 Aliases are commands used to interact with OpenMRSBot. Some commands take arguments. Arguments are documented with symbols $1 $2 $3 etc. for arguments 1, 2, 3, etc. Users can invoke a command in the IRC channel with the `!` symbol. Example (use the google alias to return a url to the google search for keyword openmrs): `!google openmrs`
 
@@ -41,3 +39,32 @@ Aliases are commands used to interact with OpenMRSBot. Some commands take argume
 - powerup: action slides $1 a Jack and Coke
 - requestsvnspace: More information on the OpenMRS code repository and on how to request access is available at: http://wiki.openmrs.org/display/docs/Code+Repository
 - refer: action refers $1 to $2
+
+
+## Plugins
+
+The following pugins are enabled in OpenMRSBot:
+
+- Admin
+- Alias
+- AutoMode
+- Channel
+- ChannelLogger
+- ChannelStats
+- Config
+- Factoids
+- Herald
+- Karma
+- MeetBot
+- Misc
+- NickCapture
+- Owner
+- RSS
+- Reply
+- Seen
+- Services
+- ShrinkUrl
+- Status
+- User
+- Web
+- alwaysLoadImportant
