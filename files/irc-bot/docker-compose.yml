@@ -7,4 +7,3 @@ services:
 
     volumes:
       - ./OpenMRSBot.conf:/data/OpenMRSBot.conf
-      - ./herald.db:/data/herald.db
