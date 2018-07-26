@@ -30,7 +30,7 @@ services:
       - "redis:redis.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - WAIT_FOR=mongo.openconceptlab.org:27017,redis.openconceptlab.org:6379,solr.openconceptlab.org:8983
       - ENVIRONMENT=${ENVIRONMENT-production}
@@ -71,7 +71,7 @@ services:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_flower.sh
     ports:
-      - "5555:5555"
+      - "5556:5555"
     depends_on:
       - celery
     links:

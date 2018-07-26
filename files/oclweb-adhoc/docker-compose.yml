@@ -17,7 +17,7 @@ services:
     links:
       - "db_web:dbweb.openconceptlab.org"
     ports:
-      - "7000:7000"
+      - "7001:7000"
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - WAIT_FOR=dbweb.openconceptlab.org:5432
