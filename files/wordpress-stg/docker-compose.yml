@@ -1,0 +1,62 @@
+version: '3.1'
+
+services:
+
+  wordpress:
+    image: wordpress:4.9.1
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-testing123}
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-openmrs}
+      WORDPRESS_AUTH_KEY: ${WORDPRESS_AUTH_KEY:-authkeysalt}
+      WORDPRESS_SECURE_AUTH_KEY: ${WORDPRESS_SECURE_AUTH_KEY:-secureauthkeysalt}
+      WORDPRESS_LOGGED_IN_KEY: ${WORDPRESS_LOGGED_IN_KEY:-loggedinkeysalt}
+      WORDPRESS_NONCE_KEY: ${WORDPRESS_NONCE_KEY:-noncekeysalt}
+      WORDPRESS_AUTH_SALT: ${WORDPRESS_AUTH_SALT:-authsalt}
+      WORDPRESS_SECURE_AUTH_SALT: ${WORDPRESS_SECURE_AUTH_SALT:-secureauthsalt}
+      WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT:-loggedinsalt}
+      WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:-noncesalt}
+    volumes:
+      - wordpress-content:/var/www/html/wp-content
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+
+  mysql:
+    image: mysql:5.6
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-testingroot123}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-testing123}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./dbdump:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: "exit 0"
+
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - mysql
+      - wordpress
+    volumes:
+      - mysql-data:/mysql_data
+      - wordpress-content:/wordpress_content
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mysql_data:mysql,/wordpress_contnet:wordpress
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
+volumes:
+  mysql-data:
+  wordpress-content:
