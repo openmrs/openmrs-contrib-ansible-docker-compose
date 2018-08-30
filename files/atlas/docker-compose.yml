@@ -29,6 +29,7 @@ services:
       SITE_KEY: ${SITE_KEY:-localhost}
       ID_HOST: ${ID_HOST:-http://localhost}
       SITE_URL: ${SITE_URL:-http://localhost}
+      GOOGLE_MAPS_JS_API_KEY: ${GOOGLE_MAPS_JS_API_KEY:-XXXXXXXXXXX_XXXXXX-XXXXXXXXXXX-XXXXXXXX}
     ports:
       - 8548:80
     volumes:

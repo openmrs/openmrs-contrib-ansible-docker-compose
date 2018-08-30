@@ -33,6 +33,7 @@ services:
       MAIL_AUTH: ${MAIL_AUTH:-true}
       MAIL_USER: ${MAIL_USER:-infrastructure@openmrs.org}
       MAIL_PASS: ${MAIL_PASS:-magic}
+      GOOGLE_MAPS_JS_API_KEY: ${GOOGLE_MAPS_JS_API_KEY:-XXXXXXXXXXX_XXXXXX-XXXXXXXXXXX-XXXXXXXX}
     ports:
       - 8548:3000
     restart: always
