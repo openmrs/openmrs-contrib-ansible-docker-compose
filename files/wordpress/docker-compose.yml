@@ -51,7 +51,7 @@ services:
       - wordpress-content:/wordpress_content
       - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mysql_data:mysql,/wordpress_contnet:wordpress
+      - DIRS=/mysql_data:mysql,/wordpress_content:wordpress
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
