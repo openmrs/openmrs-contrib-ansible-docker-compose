@@ -1,0 +1,9 @@
+---
+version: '3'
+
+services:
+  openmrs-bot:
+    image: dpyro/docker-limnoria
+
+    volumes:
+      - ./OpenMRSBot.conf:/data/OpenMRSBot.conf
