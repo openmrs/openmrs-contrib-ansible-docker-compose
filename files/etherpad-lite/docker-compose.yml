@@ -19,7 +19,7 @@ services:
   etherpad:
     restart: "always"
     image: tvelocity/etherpad-lite:latest
-    entrypoint: sh -c "bash /scripts/wait-for-it.sh db:3306 -s --timeout=180 && /entrypoint.sh bin/run.sh --root"
+    entrypoint: sh -c "chmod a+x /scripts/wait-for-it.sh && /scripts/wait-for-it.sh db:3306 -s --timeout=180 && /entrypoint.sh bin/run.sh --root"
     depends_on:
       - db
     ports:
@@ -32,6 +32,7 @@ services:
       ETHERPAD_DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
     volumes:
       - ./scripts:/scripts
+      - etherpad-conf:/opt/etherpad-lite/var
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/"]
       timeout: 20s
@@ -52,3 +53,4 @@ services:
 
 volumes:
   db-data:
+  etherpad-conf:
