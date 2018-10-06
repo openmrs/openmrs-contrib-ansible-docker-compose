@@ -19,7 +19,7 @@ services:
   etherpad:
     restart: "always"
     image: tvelocity/etherpad-lite:latest
-    entrypoint: sh -c "/scripts/wait-for-it.sh db:3306 -s --timeout=180 && /entrypoint.sh bin/run.sh --root"
+    entrypoint: sh -c "bash /scripts/wait-for-it.sh db:3306 -s --timeout=180 && /entrypoint.sh bin/run.sh --root"
     depends_on:
       - db
     ports:
