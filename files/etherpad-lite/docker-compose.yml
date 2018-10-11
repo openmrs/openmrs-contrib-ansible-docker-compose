@@ -4,7 +4,7 @@ services:
   db:
     restart: "always"
     image: mysql:5.6
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin"
     environment:
       MYSQL_DATABASE: etherpad
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
@@ -25,7 +25,8 @@ services:
     ports:
       - "9001:9001"
     environment:
-      # ETHERPAD_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin123}
+      ETHERPAD_ADMIN_USER: ${ADMIN_USER:-omrsadm}
+      ETHERPAD_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin123}
       ETHERPAD_DB_NAME: etherpad
       ETHERPAD_DB_HOST: db
       ETHERPAD_DB_USER: ${MYSQL_USER:-etherpaduser}
@@ -33,6 +34,8 @@ services:
     volumes:
       - ./scripts:/scripts
       - etherpad-conf:/opt/etherpad-lite/var
+      - etherpad-mods:/opt/etherpad-lite/node_modules/
+      - /opt/etherpad-lite/node_modules/ep_etherpad-lite
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/"]
       timeout: 20s
@@ -43,9 +46,11 @@ services:
       - etherpad
     volumes:
       - db-data:/mysql_data
+      - etherpad-conf:/etherpad_conf
+      - etherpad-mods:/etherpad_mods
       - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mysql_data:mysql
+      - DIRS=/mysql_data:mysql,/etherpad_conf:etherpad_conf,/etherpad_mods:etherpad_mods
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
@@ -54,3 +59,4 @@ services:
 volumes:
   db-data:
   etherpad-conf:
+  etherpad-mods:
