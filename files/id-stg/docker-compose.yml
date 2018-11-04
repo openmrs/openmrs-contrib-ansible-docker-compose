@@ -1,0 +1,39 @@
+version: "3"
+services:
+  mongodb:
+    restart: "always"
+    image: mongo:3.4.9
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "localhost/test", "--eval", "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 1)';"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - mongo-data:/data/db
+      - mongo-backup:/opt/backup
+
+  id-web:
+    restart: "always"
+    image: openmrs/id:staging
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file: .env
+    environment:
+      NODE_ENV: "production"
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "curl", "localhost:3000"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - id-globalnavbar:/opt/id/app/user-modules/openmrs-contrib-id-globalnavbar/data
+      - id-logs:/opt/id/logs
+
+
+volumes:
+  mongo-data:
+  mongo-backup:
+  id-globalnavbar:
+  id-logs:
