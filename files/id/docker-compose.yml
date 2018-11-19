@@ -39,7 +39,7 @@ services:
       - mongo-data:/mongo_data
       - ${BACKUP_DIR-./backups}:/backup
     environment:
-      - DIRS=/mongo_data:mongo_data
+      - DIRS=/mongo_data:mongo_data,/globalnavbar:id-globalnavbar
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
