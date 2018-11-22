@@ -19,6 +19,7 @@ services:
     ports:
       - "7000:7000"
     environment:
+      - BASE_URL=${BASE_URL-http://localhost:7000}
       - DATABASE_URL=postgres://${POSTGRES_USER-ocl}:${POSTGRES_PASSWORD-Ocl123}@dbweb.openconceptlab.org:5432/ocl
       - WAIT_FOR=dbweb.openconceptlab.org:5432
       - ENVIRONMENT=${ENVIRONMENT-production}
