@@ -34,6 +34,7 @@ services:
       - EMAIL_HOST_PASSWORD
       - SECRET_KEY
       - SENTRY_DSN_KEY
+      - IMPORT_DEMO_DATA=${IMPORT_DEMO_DATA-false}
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7000"]
