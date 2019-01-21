@@ -58,6 +58,7 @@ services:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
     environment:
       - C_FORCE_ROOT=1
       - SECRET_KEY
