@@ -42,7 +42,7 @@ services:
       timeout: 10s
       retries: 3
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - web
     volumes:
