@@ -23,7 +23,7 @@ services:
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - ldap
     volumes:
@@ -37,7 +37,7 @@ services:
     healthcheck:
       test: "exit 0"
   checkpoint:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - ldap
     volumes:

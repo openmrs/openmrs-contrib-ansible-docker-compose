@@ -48,7 +48,7 @@ services:
       retries: 3
 
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - openhim-core
     volumes:

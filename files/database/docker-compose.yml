@@ -19,7 +19,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - mysql
     volumes:

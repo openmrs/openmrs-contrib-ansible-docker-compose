@@ -39,7 +39,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost/markerSites/"]
 
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - db
     volumes:

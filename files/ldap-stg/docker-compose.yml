@@ -24,7 +24,7 @@ services:
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   backup:
-    image: openmrs/cron-backup
+    image: openmrs/cron-backup:1.0.0
     depends_on:
       - ldap
     volumes:
