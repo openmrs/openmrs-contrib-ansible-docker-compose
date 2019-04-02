@@ -18,8 +18,13 @@ docker-compose pull
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
+BACKUP_DIR=${BACKUP_DIR:-./backups}
 
-if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
+for i in ${BACKUP_URLS[@]}; do
+  wget -P "${BACKUP_DIR}" "${i}"
+done
+   
+if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
   echo "Keeping volumes"
 
   compose_params=""
@@ -31,6 +36,10 @@ if [[ "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]
 else
   echo "Recreating all images and volumes"
   docker-compose down -v
+  if [[ -n "${RESTORE_BACKUP}" ]]; then
+    echo "Restoring backup ${RESTORE_BACKUP}"
+    docker-compose run --rm backup bash restore.sh "${RESTORE_BACKUP}"
+  fi
   docker-compose up -d --no-build
 fi
 
