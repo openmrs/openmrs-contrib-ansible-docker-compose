@@ -20,9 +20,11 @@ docker-compose pull
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
 BACKUP_DIR=${BACKUP_DIR:-./backups}
 
-for i in ${BACKUP_URLS[@]}; do
-  wget -N -P "${BACKUP_DIR}" "${i}"
-done
+if [[ -n "${BACKUP_URLS}" ]]; then
+  for i in ${BACKUP_URLS[@]}; do
+    wget -N -P "${BACKUP_DIR}" "${i}"
+  done
+fi
    
 if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
   echo "Keeping volumes"
