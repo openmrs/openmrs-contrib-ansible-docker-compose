@@ -21,7 +21,7 @@ DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
 BACKUP_DIR=${BACKUP_DIR:-./backups}
 
 for i in ${BACKUP_URLS[@]}; do
-  wget -P "${BACKUP_DIR}" "${i}"
+  wget -N -P "${BACKUP_DIR}" "${i}"
 done
    
 if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
