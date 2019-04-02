@@ -84,6 +84,17 @@ services:
     restart: always
     healthcheck:
       test: "exit 0"
+  backup:
+    image: openmrs/cron-backup:1.0.0
+    volumes:
+      - mongo_data:/mongo_data
+      - solr_data:/solr_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mongo_data:mongo,/solr_data:solr
+      - SCHEDULE=0 0 5 31 2 ?
+    restart: always
+    healthcheck:
 volumes:
   mongo_data:
   solr_data:
