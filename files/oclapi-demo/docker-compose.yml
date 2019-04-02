@@ -95,6 +95,7 @@ services:
       - SCHEDULE=0 0 5 31 2 ?
     restart: always
     healthcheck:
+      test: "exit 0"
 volumes:
   mongo_data:
   solr_data:
