@@ -19,6 +19,8 @@ docker-compose pull
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
 BACKUP_DIR=${BACKUP_DIR:-./backups}
+BACKUP_URLS=${BACKUP_URLS:-}
+RESTORE_BACKUP=${RESTORE_BACKUP:-}
 
 if [[ -n "${BACKUP_URLS}" ]]; then
   for i in ${BACKUP_URLS[@]}; do
