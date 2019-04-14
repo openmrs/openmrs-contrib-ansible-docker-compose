@@ -1,27 +1,27 @@
 ---
 version: '3'
 services:
-  # openldap:
-  #   restart: "always"
-  #   image: osixia/openldap:1.1.10
-  #   ports:
-  #     - 636:636
-  #   environment:
-  #     LDAP_ORGANISATION: OpenMRS
-  #     LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
-  #     LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
-  #     LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
-  #     LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
-  #     LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
-  #     LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
-  #     LDAP_TLS_VERIFY_CLIENT: never
-  #     LDAP_LOG_LEVEL: 0
-  #   healthcheck:
-  #     test: "exit 0"
-  #   volumes:
-  #     - config:/etc/ldap/slapd.d
-  #     - database:/var/lib/ldap
-  #     - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
+  openldap:
+    restart: "always"
+    image: osixia/openldap:1.1.10
+    ports:
+      - 6366:636
+    environment:
+      LDAP_ORGANISATION: OpenMRS
+      LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
+      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
+      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
+      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
+      LDAP_TLS_VERIFY_CLIENT: never
+      LDAP_LOG_LEVEL: 0
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - config-ldap:/etc/ldap/slapd.d
+      - database-ldap:/var/lib/ldap
+      - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   ldap:
     restart: "always"
@@ -29,12 +29,11 @@ services:
     ports:
       - 636:636
     environment:
-      LDAP_ORGANISATION: OpenMRS
-      LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
+      LDAP_ORGANIZATION: OpenMRS
+      LDAP_DOMAIN: ${OLD_LDAP_DOMAIN:-openmrs.org}
       LDAP_ADMIN_PASSWORD: ${OLD_LDAP_ADMIN_PASSWORD:-admin}
-      LDAP_CONFIG_PASSWORD: ${OLD_LDAP_CONFIG_PASSWORD:-config}
       LDAP_TLS_CRT_FILENAME: ${OLD_LDAP_TLS_CRT_FILENAME:-ldap.crt}
-      LDAP_TLS_KEY_FILENAME: ${OLD_DAP_TLS_KEY_FILENAME:-ldap.key}
+      LDAP_TLS_KEY_FILENAME: ${OLD_LDAP_TLS_KEY_FILENAME:-ldap.key}
       LDAP_TLS_CA_CRT_FILENAME: ${OLD_LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
       LDAP_TLS_VERIFY_CLIENT: never
       LDAP_LOG_LEVEL: 0
@@ -59,6 +58,23 @@ services:
     restart: always
     healthcheck:
       test: "exit 0"
+
+  checkpoint:
+    image: openmrs/cron-backup:1.0.0
+    depends_on:
+      - ldap
+    volumes:
+      - database:/ldap_database_data
+      - ./scripts:/scripts
+    environment:
+      - SCRIPT=/scripts/ldap-mantainance.sh
+      - SCHEDULE=0 1 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
 volumes:
   config:
   database:
+  config-ldap:
+  database-ldap:
