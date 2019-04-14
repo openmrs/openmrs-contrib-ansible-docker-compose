@@ -1,6 +1,28 @@
 ---
 version: '3'
 services:
+  # openldap:
+  #   restart: "always"
+  #   image: osixia/openldap:1.1.10
+  #   ports:
+  #     - 636:636
+  #   environment:
+  #     LDAP_ORGANISATION: OpenMRS
+  #     LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
+  #     LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
+  #     LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
+  #     LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
+  #     LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
+  #     LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
+  #     LDAP_TLS_VERIFY_CLIENT: never
+  #     LDAP_LOG_LEVEL: 0
+  #   healthcheck:
+  #     test: "exit 0"
+  #   volumes:
+  #     - config:/etc/ldap/slapd.d
+  #     - database:/var/lib/ldap
+  #     - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
+
   ldap:
     restart: "always"
     image: osixia/openldap:1.1.8
@@ -9,11 +31,11 @@ services:
     environment:
       LDAP_ORGANISATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
-      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
-      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
-      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
-      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
-      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
+      LDAP_ADMIN_PASSWORD: ${OLD_LDAP_ADMIN_PASSWORD:-admin}
+      LDAP_CONFIG_PASSWORD: ${OLD_LDAP_CONFIG_PASSWORD:-config}
+      LDAP_TLS_CRT_FILENAME: ${OLD_LDAP_TLS_CRT_FILENAME:-ldap.crt}
+      LDAP_TLS_KEY_FILENAME: ${OLD_DAP_TLS_KEY_FILENAME:-ldap.key}
+      LDAP_TLS_CA_CRT_FILENAME: ${OLD_LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
       LDAP_TLS_VERIFY_CLIENT: never
       LDAP_LOG_LEVEL: 0
     healthcheck:
@@ -21,7 +43,7 @@ services:
     volumes:
       - config:/etc/ldap/slapd.d
       - database:/var/lib/ldap
-      - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
+      - ${OLD_CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   backup:
     image: openmrs/cron-backup:1.0.0
