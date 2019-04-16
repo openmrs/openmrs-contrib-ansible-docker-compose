@@ -7,6 +7,8 @@ It currently have two ldap containers (as we'll be migrating the data from the o
 You can check files in `bootstrap` ldif files; passwords will be exactly the same as
 the username.
 
+By default, it will answer using SSL (but you need to skip certificate verification, as it's self-signed). 
+
 
 ```
 # Bring containers up
