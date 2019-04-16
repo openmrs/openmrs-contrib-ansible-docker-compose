@@ -3,7 +3,8 @@ version: '3'
 services:
   openldap:
     restart: "always"
-    image: osixia/openldap:1.1.10
+    image: osixia/openldap:1.2.4
+    command: "--copy-service"
     ports:
       - 6366:636
     environment:
@@ -21,6 +22,7 @@ services:
     volumes:
       - config-ldap:/etc/ldap/slapd.d
       - database-ldap:/var/lib/ldap
+      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   ldap:
@@ -42,36 +44,7 @@ services:
     volumes:
       - config:/etc/ldap/slapd.d
       - database:/var/lib/ldap
-      - ${OLD_CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
-
-  backup:
-    image: openmrs/cron-backup:1.0.0
-    depends_on:
-      - ldap
-    volumes:
-      - config:/ldap_config_data
-      - database:/ldap_database_data
-      - ${BACKUP_DIR-./backups}:/backup
-    environment:
-      - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
-      - SCHEDULE=0 0 * * *
-    restart: always
-    healthcheck:
-      test: "exit 0"
-
-  checkpoint:
-    image: openmrs/cron-backup:1.0.0
-    depends_on:
-      - ldap
-    volumes:
-      - database:/ldap_database_data
-      - ./scripts:/scripts
-    environment:
-      - SCRIPT=/scripts/ldap-mantainance.sh
-      - SCHEDULE=0 1 * * *
-    restart: always
-    healthcheck:
-      test: "exit 0"
+      - ${OLD_CERTS_DIR-./certs_old}:/container/service/slapd/assets/certs/
 
 volumes:
   config:
