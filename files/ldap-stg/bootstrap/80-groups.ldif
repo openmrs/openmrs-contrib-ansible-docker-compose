@@ -3,11 +3,11 @@ description: Atlas administrators
 objectClass: groupOfNames
 cn: atlas-admin
 member:
-member: uid=test,ou=users,dc=openmrs,dc=org
+member: uid=testadmin,ou=users,dc=openmrs,dc=org
 
 dn: cn=atlas-users,ou=groups,dc=openmrs,dc=org
-description: Atlas administrators
+description: Atlas Users
 objectClass: groupOfNames
-cn: atlas-admin
+cn: atlas-users
 member:
 member: uid=test,ou=users,dc=openmrs,dc=org
