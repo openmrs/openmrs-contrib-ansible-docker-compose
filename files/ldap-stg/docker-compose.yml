@@ -23,8 +23,12 @@ services:
     volumes:
       - config-ldap:/etc/ldap/slapd.d
       - database-ldap:/var/lib/ldap
-      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
+      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+
+      # Only adds test data locally
+      - ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
+      - ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
 
   ldap:
     restart: "always"
