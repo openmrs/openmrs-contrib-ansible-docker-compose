@@ -7,7 +7,7 @@ services:
     command: "--copy-service"
     ports:
       - 3389:389
-      - 6366:636
+      - 6636:636
     environment:
       LDAP_ORGANISATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
