@@ -24,8 +24,8 @@ services:
       DB_USERNAME: ${DB_USERNAME:-atlas}
       DB_PASSWORD: ${DB_PASSWORD:-iamatlas}
       LDAP_URI: ${LDAP_URI:-ldaps://ldap-stg.openmrs.org:636}
-      LDAP_AUTH_USER: ${LDAP_AUTH_USER:-atlas}
-      LDAP_AUTH_PASSWORD: ${LDAP_AUTH_PASSWORD:-magic}
+      LDAP_USER: ${LDAP_USER:-atlas}
+      LDAP_PASSWORD: ${LDAP_PASSWORD:-magic}
       LDAP_USERS_GROUP: ${LDAP_USERS_GROUP:-atlas-users}
       LDAP_ADMIN_GROUP: ${LDAP_ADMIN_GROUP:-atlas-administrators}
       MAIL_HOST: ${MAIL_HOST:-smtp.mandrillapp.com}
