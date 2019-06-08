@@ -38,7 +38,7 @@ services:
       - 8548:3000
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/markerSites/"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/markers/"]
 
   backup:
     image: openmrs/cron-backup:1.0.0
