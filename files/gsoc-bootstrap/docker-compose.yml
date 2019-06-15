@@ -18,7 +18,7 @@ services:
 
   openmrs-referenceapplication:
     restart: "always"
-    image: openmrs/openmrs-reference-application-distro:${OPENMRS_VERSION:-gsoc-bootstrap}
+    image: openmrs/openmrs-reference-application-distro:${OPENMRS_VERSION:-uat}
     depends_on:
       - openmrs-referenceapplication-mysql
     ports:
