@@ -28,7 +28,7 @@ services:
   backup:
     image: openmrs/cron-backup:1.0.0
     depends_on:
-      - ldap
+      - openldap
     volumes:
       - config-ldap:/ldap_config_data
       - database-ldap:/ldap_database_data
