@@ -1,5 +1,6 @@
 ---
 version: '3'
+
 services:
   openldap:
     restart: "always"
@@ -7,7 +8,7 @@ services:
     command: "--copy-service"
     ports:
       - 3389:389
-      - 6636:636
+      - 636:636
     environment:
       LDAP_ORGANISATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
@@ -30,29 +31,6 @@ services:
       - ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
       - ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
 
-  ldap:
-    restart: "always"
-    image: osixia/openldap:1.1.8
-    ports:
-      - 636:636
-    environment:
-      LDAP_ORGANIZATION: OpenMRS
-      LDAP_DOMAIN: ${OLD_LDAP_DOMAIN:-openmrs.org}
-      LDAP_ADMIN_PASSWORD: ${OLD_LDAP_ADMIN_PASSWORD:-admin}
-      LDAP_TLS_CRT_FILENAME: ${OLD_LDAP_TLS_CRT_FILENAME:-ldap.crt}
-      LDAP_TLS_KEY_FILENAME: ${OLD_LDAP_TLS_KEY_FILENAME:-ldap.key}
-      LDAP_TLS_CA_CRT_FILENAME: ${OLD_LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
-      LDAP_TLS_VERIFY_CLIENT: never
-      LDAP_LOG_LEVEL: 0
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - config:/etc/ldap/slapd.d
-      - database:/var/lib/ldap
-      - ${OLD_CERTS_DIR-./certs_old}:/container/service/slapd/assets/certs/
-
 volumes:
-  config:
-  database:
   config-ldap:
   database-ldap:

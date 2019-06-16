@@ -1,15 +1,18 @@
 ---
 version: '3'
+
 services:
-  ldap:
+  openldap:
     restart: "always"
-    image: osixia/openldap:1.1.8
-    ports:
-      - 636:636
+    image: osixia/openldap:1.2.4
+    command: "--copy-service"
+    # ports:
+      # - 636:636
     environment:
-      LDAP_ORGANIZATION: OpenMRS
+      LDAP_ORGANISATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
       LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
       LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
       LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
@@ -18,8 +21,8 @@ services:
     healthcheck:
       test: "exit 0"
     volumes:
-      - config:/etc/ldap/slapd.d
-      - database:/var/lib/ldap
+      - config-ldap:/etc/ldap/slapd.d
+      - database-ldap:/var/lib/ldap
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
 
   backup:
@@ -27,8 +30,8 @@ services:
     depends_on:
       - ldap
     volumes:
-      - config:/ldap_config_data
-      - database:/ldap_database_data
+      - config-ldap:/ldap_config_data
+      - database-ldap:/ldap_database_data
       - ${BACKUP_DIR-./backups}:/backup
     environment:
       - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
@@ -49,6 +52,7 @@ services:
     restart: always
     healthcheck:
       test: "exit 0"
+
 volumes:
-  config:
-  database:
+  config-ldap:
+  database-ldap:
