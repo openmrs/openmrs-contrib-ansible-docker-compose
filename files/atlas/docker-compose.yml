@@ -15,7 +15,7 @@ services:
       test: "exit 0"
 
   atlas:
-    image: openmrs/atlas:production
+    image: openmrs/atlas:2.1
     depends_on:
       - db
     environment:
