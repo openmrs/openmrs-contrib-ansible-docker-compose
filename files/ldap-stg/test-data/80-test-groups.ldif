@@ -1,4 +1,4 @@
-dn: cn=atlas-admin,ou=groups,{{ LDAP_BASE_DN }}
+dn: cn=atlas-administrators,ou=groups,{{ LDAP_BASE_DN }}
 description: Atlas administrators
 objectClass: groupOfNames
 cn: atlas-admin
