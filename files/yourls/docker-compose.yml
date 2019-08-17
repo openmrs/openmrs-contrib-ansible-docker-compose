@@ -28,6 +28,7 @@ services:
       YOURLS_DEBUG: ${YOURLS_DEBUG:-true}
       YOURLS_USERS: ${YOURLS_USERS:-default:default}
       YOURLS_SITE: ${YOURLS_SITE:-http://localhost}
+      YOURLS_INDEX_WEBSITE: ${YOURLS_INDEX_WEBSITE:-https://yourls.org}
       YOURLS_ADMIN_SSL: ${YOURLS_ADMIN_SSL:-false}
       YOURLS_UNIQUE_URLS: ${YOURLS_UNIQUE_URLS:-false}
       YOURLS_GA_TRACKING_ID: ${YOURLS_GA_TRACKING_ID:-UA-12345678-90}
