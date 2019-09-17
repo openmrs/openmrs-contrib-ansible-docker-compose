@@ -1,0 +1,14 @@
+version: '2.1'
+
+services:
+  oclclient:
+    image: openmrs/ocl-client:prd
+    environment:
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.openconceptlab.org/}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://openconceptlab.org}
+      - ENVIRONMENT=${ENVIRONMENT:-prd}
+    ports:
+      - 8081:80
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-s", "http://localhost/"]
