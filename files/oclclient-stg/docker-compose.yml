@@ -1,0 +1,14 @@
+version: '2.1'
+
+services:
+  oclclient:
+    image: openmrs/ocl-client:stg
+    environment:
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org/}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.openconceptlab.org}
+      - ENVIRONMENT=${ENVIRONMENT:-stg}
+    ports:
+      - 8082:80
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-s", "http://localhost/"]
