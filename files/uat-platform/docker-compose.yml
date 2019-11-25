@@ -1,0 +1,39 @@
+version: '2.2'
+
+services:
+  openmrs-platform-mysql:
+    restart: "always"
+    image: mysql:5.6
+    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - ./dbdump:/docker-entrypoint-initdb.d
+      # - openmrs-platform-mysql-data:/var/lib/mysql  # uncomment to keep database between docker runs
+
+  openmrs-platform:
+    restart: "always"
+    image: openmrs/openmrs-distro-platform:${OPENMRS_VERSION:-uat}
+    depends_on:
+      - openmrs-platform-mysql
+    ports:
+      - "8081:8080"
+    environment:
+      DB_DATABASE: ${MYSQL_DB:-openmrs}
+      DB_HOST: openmrs-platform-mysql
+      DB_USERNAME: ${MYSQL_USER:-openmrs}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+      DB_CREATE_TABLES: 'false'
+      DB_AUTO_UPDATE: 'false'
+      MODULE_WEB_ADMIN: 'false'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
+      timeout: 20s
+
+volumes:
+  openmrs-platform-mysql-data:
