@@ -1,10 +1,10 @@
 # Description
 
-LDAP STG (with some test data).
+LDAP containers.
 
-
-You can check files in `bootstrap` ldif files; passwords will be exactly the same as
-the username. Check the readme inside the folder for details.
+Contrary to the `ldap`, this docker compose relies on the structure already being configured.
+Use a backup or the files from the staging docker compose.
+<https://wiki.openmrs.org/x/6QDfAw>
 
 By default, it will answer using SSL (but you need to skip certificate verification, as it's self-signed).
 
@@ -16,7 +16,7 @@ $ docker-compose up -d
 
 To investigate data:
 ```
-docker exec -it ldap-stg_openldap_1 bash
+docker exec -it ldap_openldap_1 bash
 
 # see all data
 ldapsearch -LLL -D "cn=admin,dc=openmrs,dc=org" -W -b "dc=openmrs,dc=org"
