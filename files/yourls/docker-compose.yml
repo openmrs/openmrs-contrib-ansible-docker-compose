@@ -15,7 +15,7 @@ services:
       test: "exit 0"
 
   yourls:
-    image: openmrs/docker-yourls
+    image: openmrsinfra/docker-yourls
     depends_on:
       - db
     ports:
@@ -37,7 +37,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost/admin/"]
 
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:1.0.0
     depends_on:
       - db
     volumes:
