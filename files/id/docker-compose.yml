@@ -14,7 +14,7 @@ services:
 
   id-web:
     restart: "always"
-    image: openmrs/id:production
+    image: openmrsinfra/id:production
     ports:
       - "127.0.0.1:3000:3000"
     env_file: .env
@@ -32,7 +32,7 @@ services:
       - id-logs:/opt/id/logs
 
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:1.0.0
     depends_on:
       - mongodb
     volumes:

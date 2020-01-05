@@ -16,7 +16,7 @@ services:
       test: "exit 0"
 
   implementationid:
-    image: openmrs/implementation-id:latest
+    image: openmrsinfra/implementation-id:latest
     depends_on:
       - db
     environment:
@@ -31,7 +31,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
 
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:1.0.0
     depends_on:
       - db
     volumes:
