@@ -24,7 +24,6 @@ services:
       - config-ldap:/etc/ldap/slapd.d
       - database-ldap:/var/lib/ldap
       - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
-      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
 
   backup:
     image: openmrs/cron-backup:1.0.0
