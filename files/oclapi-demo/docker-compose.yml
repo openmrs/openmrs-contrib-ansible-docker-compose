@@ -119,7 +119,7 @@ services:
     healthcheck:
       test: "exit 0"
   backup:
-    image: openmrsinfra/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:latest
     volumes:
       - mongo_data:/mongo_data
       - solr_data:/solr_data

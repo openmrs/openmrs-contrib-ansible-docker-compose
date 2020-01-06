@@ -43,7 +43,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/markers"]
 
   backup:
-    image: openmrsinfra/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:latest
     depends_on:
       - db
     volumes:

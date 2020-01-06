@@ -31,7 +31,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
 
   backup:
-    image: openmrsinfra/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:latest
     depends_on:
       - db
     volumes:
