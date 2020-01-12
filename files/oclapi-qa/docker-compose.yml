@@ -120,7 +120,7 @@ services:
       test: "exit 0"
 #  Disabled backup for QA
 #  backup:
-#    image: openmrs/cron-backup:1.0.0
+#    image: openmrsinfra/cron-backup:1.0.0
 #    volumes:
 #      - mongo_data:/mongo_data
 #      - solr_data:/solr_data

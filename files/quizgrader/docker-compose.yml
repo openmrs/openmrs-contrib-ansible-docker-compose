@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   app:
-    image: openmrs/openmrs-contrib-quizgrader:latest
+    image: openmrsinfra/quizgrader:latest
     restart: "always"
     env_file:
      - .env

@@ -14,7 +14,7 @@ services:
 
   id-web:
     restart: "always"
-    image: openmrs/id:staging
+    image: openmrsinfra/id:staging
     ports:
       - "127.0.0.1:3000:3000"
     env_file: .env
