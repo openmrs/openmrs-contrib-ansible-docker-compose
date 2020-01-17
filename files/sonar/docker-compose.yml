@@ -34,7 +34,7 @@ services:
       - sonar-extensions:/opt/sonarqube/extensions
 
   backup:
-    image: openmrs/cron-backup:1.0.0
+    image: openmrsinfra/cron-backup:1.0.0
     depends_on:
       mysql:
         condition: service_healthy

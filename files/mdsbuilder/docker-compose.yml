@@ -40,7 +40,7 @@ services:
       - /usr/local/tomcat/.OpenMRS/owa/ # do not store owa in web-data
 
   backup:
-    image: openmrs/cron-backup:latest
+    image: openmrsinfra/cron-backup:latest
     depends_on:
       - web
     volumes:
