@@ -5,6 +5,7 @@ services:
   openldap:
     restart: "always"
     image: osixia/openldap:1.2.4
+    container_name: openldap       # used by letsencrypt hook
     command: "--copy-service"
     ports:
       - 636:636
