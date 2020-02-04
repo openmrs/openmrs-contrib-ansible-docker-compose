@@ -7,7 +7,7 @@ services:
       - OCL_DOMAIN=${OCL_DOMAIN:-openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-production}
     ports:
-      - 8084:80
+      - 8082:80
     restart: always
     healthcheck:
       test: ["CMD", "wget", "-q", "-s", "http://localhost/"]
