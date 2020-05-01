@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  app:
+    image: openmrsinfra/shields:latest
+    restart: "always"
+    ports:
+      - "8083:3033"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3033/custom/a/b/red"]
+      timeout: 5s
