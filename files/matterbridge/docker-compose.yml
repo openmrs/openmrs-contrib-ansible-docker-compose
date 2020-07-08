@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  matterbridge:
+    image: 42wim/matterbridge:1.17.5
+    restart: always
+    volumes:
+      - ./matterbridge.toml:/etc/matterbridge/matterbridge.toml
+    environment:
+      - MATTERBRIDGE_IRC_OMRS_NICK=$IRC_NICK
+      - MATTERBRIDGE_IRC_OMRS_NICKSERVNICK=$IRC_NICK
+      - MATTERBRIDGE_IRC_OMRS_NICKSERVPASSWORD=$IRC_PASSWORD
+      - MATTERBRIDGE_TELEGRAM_OMRS_TOKEN=$TELEGRAM_TOKEN
+      - MATTERBRIDGE_SLACK_OMRS_TOKEN=$SLACK_TOKEN
