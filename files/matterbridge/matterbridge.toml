@@ -1,0 +1,34 @@
+[general]
+RemoteNickFormat="{NICK} <{PROTOCOL}> "
+
+[irc.omrs]
+Nick="" # uses env MATTERBRIDGE_IRC_OMRS_NICK
+NickServNick="" # uses env MATTERBRIDGE_IRC_OMRS_NICKSERVNICK
+NickServPassword="" # uses env MATTERBRIDGE_IRC_OMRS_NICKSERVPASSWORD
+Server="irc.freenode.net:6697"
+UseTLS=true
+UseSASL=true
+SkipTLSVerify=false
+
+[telegram.omrs]
+Token="" # uses env MATTERBRIDGE_TELEGRAM_OMRS_TOKEN
+
+[slack]
+[slack.omrs]
+Token="" # uses env MATTERBRIDGE_SLACK_OMRS_TOKEN
+
+[[gateway]]
+name="omrs_gateway"
+enable=true
+
+  [[gateway.inout]]
+  account="irc.omrs"
+  channel="#openmrs"
+
+  [[gateway.inout]]
+  account="telegram.omrs"
+  channel="-1001316747171" # t.me/OpenMRS
+
+  [[gateway.inout]]
+  account="slack.omrs"
+  channel="general"
