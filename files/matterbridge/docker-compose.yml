@@ -12,3 +12,6 @@ services:
       - MATTERBRIDGE_IRC_OMRS_NICKSERVPASSWORD=$IRC_PASSWORD
       - MATTERBRIDGE_TELEGRAM_OMRS_TOKEN=$TELEGRAM_TOKEN
       - MATTERBRIDGE_SLACK_OMRS_TOKEN=$SLACK_TOKEN
+    healthcheck:
+      test: ["CMD", "/bin/matterbridge", "--version"]
+      timeout: 5s
