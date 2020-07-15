@@ -7,8 +7,8 @@ NickServNick="" # uses env MATTERBRIDGE_IRC_OMRS_NICKSERVNICK
 NickServPassword="" # uses env MATTERBRIDGE_IRC_OMRS_NICKSERVPASSWORD
 Server="irc.freenode.net:6697"
 UseTLS=true
-UseSASL=true
 SkipTLSVerify=false
+UseSASL=true
 
 [telegram.omrs]
 Token="" # uses env MATTERBRIDGE_TELEGRAM_OMRS_TOKEN
@@ -16,6 +16,7 @@ Token="" # uses env MATTERBRIDGE_TELEGRAM_OMRS_TOKEN
 [slack]
 [slack.omrs]
 Token="" # uses env MATTERBRIDGE_SLACK_OMRS_TOKEN
+ShowUserTyping=true
 
 [[gateway]]
 name="omrs_gateway"
@@ -31,4 +32,4 @@ enable=true
 
   [[gateway.inout]]
   account="slack.omrs"
-  channel="general"
+  channel="community"

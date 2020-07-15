@@ -7,7 +7,7 @@ to bridge channels across chat services used by the community.
 
 - IRC `#openmrs` channel
 - Telegram `OpenMRS Chat` channel ([t.me/OpenMRS](https://t.me/OpenMRS))
-- Slack `#general` channel
+- Slack `#community` channel
 
 ## Configuration
 
