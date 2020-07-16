@@ -34,4 +34,4 @@ enable=true
 
   [[gateway.inout]]
   account="slack.omrs"
-  channel="community"
+  channel="general"
