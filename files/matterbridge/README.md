@@ -7,7 +7,7 @@ to bridge channels across chat services used by the community.
 
 - IRC `#openmrs` channel
 - Telegram `OpenMRS Chat` channel ([t.me/OpenMRS](https://t.me/OpenMRS))
-- Slack `#community` channel
+- Slack `#general` channel
 
 ## Configuration
 
@@ -19,6 +19,9 @@ All credentials are configured via the `.env` file.
 
 The `omrsbridge` user is registered to openmrs-infrastructure+irc email address
 and has voice in the `#openmrs` channel.
+
+We mute Travis notifications and OpenMRSBot short link generation from being copied
+from IRC, since they create too much noise for Slack's #general channel.
 
 ## Telegram
 
