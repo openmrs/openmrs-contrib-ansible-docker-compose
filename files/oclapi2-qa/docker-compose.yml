@@ -55,11 +55,11 @@ services:
       - celery
       - redis
     environment:
-      - FLOWER_USER=${FLOWER_USER-root}
-      - FLOWER_PASSWORD=${FLOWER_PASSWORD-Root123}
+      - FLOWER_USER=${FLOWER_USER-ocladmin}
+      - FLOWER_PASSWORD=${FLOWER_PASSWORD-OclAdm1n@123}
     restart: "always"
     healthcheck:
-      test: "curl -u ${FLOWER_USER-flower}:${FLOWER_PASSWORD-Flower123} -f http://localhost:5555/"
+      test: "curl -u ${FLOWER_USER-ocladmin}:${FLOWER_PASSWORD-OclAdm1n@123} -f http://localhost:5555/"
   es:
     image: elasticsearch:7.8.1
     environment:
