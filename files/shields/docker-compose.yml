@@ -9,5 +9,5 @@ services:
     environment:
       - NODE_ENV=production
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3033/custom/a/b/red"]
+      test: ["CMD", "node", "healthcheck.js"]
       timeout: 5s
