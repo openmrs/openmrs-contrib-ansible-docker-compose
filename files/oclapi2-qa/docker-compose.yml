@@ -100,24 +100,6 @@ services:
   es:
     image: elasticsearch:7.8.1
     environment:
-      - node.name=es
-      - cluster.name=es-cluster
-      - discovery.seed_hosts=es1
-      - cluster.initial_master_nodes=es,es1
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-    restart: "always"
-    healthcheck:
-      test: "exit 0"
-  es:
-    image: elasticsearch:7.8.1
-    environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
