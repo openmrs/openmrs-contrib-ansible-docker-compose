@@ -16,7 +16,7 @@ services:
   api:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
     restart: "always"
-    command: sh -c "./wait-for-it.sh db:5432 -t 0 -- ./wait-for-it.sh es:9200 -t 0 -- ./startup.sh"
+    command: sh -c "./startup.sh"
     ports:
       - 8001:8000
     depends_on:
@@ -27,13 +27,18 @@ services:
       - es1
     environment:
       - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT-6379}
       - DB_HOST=db
       - DB_PASSWORD=${DB_PASSWORD-Postgres123}
+      - ES_HOST=${ES_HOST-es}
+      - ES_PORT=${ES_PORT-9200}
       - ENVIRONMENT=${ENVIRONMENT-production}
       - SECRET_KEY
       - SENTRY_DSN_KEY
       - API_SUPERUSER_PASSWORD=${API_SUPERUSER_PASSWORD-OclAdm1n@123}
       - API_SUPERUSER_TOKEN=${API_SUPERUSER_TOKEN-OclAdm1n@123}
+      - API_BASE_URL=${API_BASE_URL-https://api.qa2.openconceptlab.org}
+      - API_INTERNAL_BASE_URL=${API_INTERNAL_BASE_URL-http://api:8001}
       - EMAIL_NOREPLY_PASSWORD
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
@@ -42,13 +47,43 @@ services:
       test: "curl -f http://localhost:8000/admin"
   celery:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: sh -c ./start_celery_worker.sh
+    command: ["bash", "-c", "./start_celery_worker.sh -Q default -n default --autoscale=60,15"]
     restart: "always"
     healthcheck:
       test: "celery inspect ping -A core.celery"
+    environment:
+      - REDIS_HOST=${REDIS_HOST-redis}
+      - REDIS_PORT=${REDIS_PORT-6379}
+  celery_bulk_import_0_1:
+    image: openconceptlab/oclapi2:${ENVIRONMENT-production}
+    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_0,bulk_import_1 -n bulk_import_0_1 -c 1"]
+    restart: "always"
+    healthcheck:
+      test: "celery inspect ping -A core.celery"
+    environment:
+      - REDIS_HOST=${REDIS_HOST-redis}
+      - REDIS_PORT=${REDIS_PORT-6379}
+  celery_bulk_import_2_3:
+    image: openconceptlab/oclapi2:${ENVIRONMENT-production}
+    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_2,bulk_import_3 -n bulk_import_2_3 -c 1"]
+    restart: "always"
+    healthcheck:
+      test: "celery inspect ping -A core.celery"
+    environment:
+      - REDIS_HOST=${REDIS_HOST-redis}
+      - REDIS_PORT=${REDIS_PORT-6379}
+  celery_bulk_import_root:
+    image: openconceptlab/oclapi2:${ENVIRONMENT-production}
+    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_root -n bulk_import_root -c 1"]
+    restart: "always"
+    healthcheck:
+      test: "celery inspect ping -A core.celery"
+    environment:
+      - REDIS_HOST=${REDIS_HOST-redis}
+      - REDIS_PORT=${REDIS_PORT-6379}
   flower:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: sh -c "./wait-for-it.sh redis:6379 -t 0 -- ./start_flower.sh"
+    command: sh -c "./start_flower.sh"
     ports:
       - 5556:5555
     depends_on:
@@ -57,6 +92,8 @@ services:
     environment:
       - FLOWER_USER=${FLOWER_USER-ocladmin}
       - FLOWER_PASSWORD=${FLOWER_PASSWORD-OclAdm1n@123}
+      - REDIS_HOST=${REDIS_HOST-redis}
+      - REDIS_PORT=${REDIS_PORT-6379}
     restart: "always"
     healthcheck:
       test: "exit 0"
@@ -78,13 +115,10 @@ services:
     restart: "always"
     healthcheck:
       test: "exit 0"
-  es1:
+  es:
     image: elasticsearch:7.8.1
     environment:
-      - node.name=es1
-      - cluster.name=es-cluster
-      - discovery.seed_hosts=es
-      - cluster.initial_master_nodes=es,es1
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
@@ -92,11 +126,10 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - es1-data:/usr/share/elasticsearch/data
+      - es-data:/usr/share/elasticsearch/data
     restart: "always"
     healthcheck:
       test: "exit 0"
 volumes:
   postgres-data:
   es-data:
-  es1-data:
