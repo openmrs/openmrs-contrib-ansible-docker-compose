@@ -4,7 +4,7 @@ services:
   oclclient:
     image: openmrs/ocl-client:qa
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.qa2.openconceptlab.org/}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.qa2.aws.openconceptlab.org/}
       - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://qa2.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
