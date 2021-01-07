@@ -3,10 +3,13 @@ version: '3'
 services:
 
   opencr:
+    restart: "always"
     container_name: opencr
     image: intrahealth/opencr
     ports:
       - "3000:3000"
+    healthcheck:
+      test: "exit 0" 
     depends_on:
       - fhir
       - es
@@ -15,19 +18,20 @@ services:
       - NODE_ENV=cicd
     volumes:
       - ./config_cicd.json:/src/server/config/config_cicd.json  
-    # networks: 
-    #   - opencr
 
   fhir:
+    restart: "always"
     container_name: hapi-fhir
     image: hapiproject/hapi:v5.1.0
     ports:
-      - "8080:8080"
-    # networks:
-    #   - opencr
+      - "8092:8080"
+    healthcheck:
+      test: "exit 0" 
+    
 
   es:
     container_name: es
+    restart: "always"
     image: intrahealth/elasticsearch:latest
     environment:
       - node.name=es01
@@ -41,15 +45,15 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
-    # networks:
-    #   - opencr
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      timeout: 20s    
+   
 
 
 volumes:
   data01:
     driver: local
 
-# networks:
-#   opencr:
-#     driver: bridge
+

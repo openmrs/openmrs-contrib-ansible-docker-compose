@@ -18,7 +18,7 @@
     "register": false
   },
   "fhirServer": {
-    "baseURL": "http://149.165.169.27:8080/fhir",
+    "baseURL": "http://149.165.169.27:8092/fhir",
     "username": "hapi",
     "password": "hapi"
   },

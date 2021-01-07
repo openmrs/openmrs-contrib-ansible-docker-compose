@@ -3,7 +3,7 @@
   "minimumCoreVersion": "3.4.0",
   "protocol": "https",
   "host": "149.165.169.27",
-  "port": 8080,
+  "port": 8093,
   "title": "Admin Console",
   "footerTitle": "OpenHIM Administration Console",
   "footerPoweredBy": "<a href='http://openhim.org/' target='_blank'>Powered by OpenHIM</a>",
