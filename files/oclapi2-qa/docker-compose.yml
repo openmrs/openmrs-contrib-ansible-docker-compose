@@ -28,6 +28,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=${REDIS_PORT-6379}
       - DB_HOST=db
+      - DB_PORT=${DB_PORT-5432}
       - DB_PASSWORD=${DB_PASSWORD-Postgres123}
       - ES_HOST=${ES_HOST-es}
       - ES_PORT=${ES_PORT-9200}
