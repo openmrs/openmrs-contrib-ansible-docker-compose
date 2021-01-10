@@ -11,19 +11,19 @@
     "api": {
       "username": "root@openhim.org",
       "password": "openhim-password",
-      "apiURL": "https://localhost:8080",
+      "apiURL": "https://namanga.openmrs.org:8093",
       "trustSelfSigned": true,
       "urn": ""
     },
     "register": false
   },
   "fhirServer": {
-    "baseURL": "http://149.165.169.27:8092/fhir",
+    "baseURL": "http://namanga.openmrs.org:8092/fhir",
     "username": "hapi",
     "password": "hapi"
   },
   "elastic": {
-    "server": "http://149.165.169.27:9200",
+    "server": "http://namanga.openmrs.org:9200",
     "username": "",
     "password": "",
     "max_compilations_rate": "10000/1m",
