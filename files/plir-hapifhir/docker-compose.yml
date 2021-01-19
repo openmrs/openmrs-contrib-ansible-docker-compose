@@ -1,7 +1,7 @@
 version: "3"
 services:
   plir-hapi:
-    image: mozzy11/openmrs-plir:basic_auth
+    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir
     container_name: plir_hapi_auth
     restart: always
     ports:
