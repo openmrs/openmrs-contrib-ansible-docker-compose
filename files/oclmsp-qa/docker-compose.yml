@@ -10,4 +10,4 @@ services:
       - 8083:80
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "http://localhost/"]
