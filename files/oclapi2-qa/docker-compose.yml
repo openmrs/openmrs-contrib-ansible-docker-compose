@@ -47,7 +47,7 @@ services:
       test: "curl -f http://localhost:8000/admin"
   celery:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: ["bash", "-c", "./start_celery_worker.sh -Q default -n default --autoscale=60,15"]
+    command: ["bash", "-c", "CELERY_WORKER_NAME=default ./start_celery_worker.sh -Q default --autoscale=60,15"]
     restart: "always"
     healthcheck:
       test: "celery inspect ping -A core.celery"
@@ -56,7 +56,7 @@ services:
       - REDIS_PORT=${REDIS_PORT-6379}
   celery_bulk_import_0_1:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_0,bulk_import_1 -n bulk_import_0_1 -c 1"]
+    command: ["bash", "-c", "CELERY_WORKER_NAME=bulk_import_0_1 ./start_celery_worker.sh -Q bulk_import_0,bulk_import_1 -c 1"]
     restart: "always"
     healthcheck:
       test: "celery inspect ping -A core.celery"
@@ -65,7 +65,7 @@ services:
       - REDIS_PORT=${REDIS_PORT-6379}
   celery_bulk_import_2_3:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_2,bulk_import_3 -n bulk_import_2_3 -c 1"]
+    command: ["bash", "-c", "CELERY_WORKER_NAME=bulk_import_2_3 ./start_celery_worker.sh -Q bulk_import_2,bulk_import_3 -c 1"]
     restart: "always"
     healthcheck:
       test: "celery inspect ping -A core.celery"
@@ -74,7 +74,7 @@ services:
       - REDIS_PORT=${REDIS_PORT-6379}
   celery_bulk_import_root:
     image: openconceptlab/oclapi2:${ENVIRONMENT-production}
-    command: ["bash", "-c", "./start_celery_worker.sh -Q bulk_import_root -n bulk_import_root -c 1"]
+    command: ["bash", "-c", "CELERY_WORKER_NAME=bulk_import_root ./start_celery_worker.sh -Q bulk_import_root -c 1"]
     restart: "always"
     healthcheck:
       test: "celery inspect ping -A core.celery"
