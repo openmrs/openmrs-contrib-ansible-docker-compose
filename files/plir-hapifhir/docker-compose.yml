@@ -1,0 +1,10 @@
+version: "3"
+services:
+  plir-hapi:
+    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir
+    container_name: plir_hapi_auth
+    restart: always
+    ports:
+      - "8091:8080"
+    healthcheck:
+      test: "exit 0"
