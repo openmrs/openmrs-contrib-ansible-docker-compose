@@ -18,10 +18,10 @@ services:
       - mongo_url=mongodb://mongo-plir/openhim
       - mongo_atnaUrl=mongodb://mongo-plir/openhim
     ports:
-      - "5001:5001"
+      - "5555:5000"
       - "8093:8080"
     expose :
-      - "5000"
+      - "5001"
       - "5050"
       - "5051"
       - "5052"
