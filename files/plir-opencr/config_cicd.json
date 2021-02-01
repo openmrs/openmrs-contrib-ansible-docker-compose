@@ -11,14 +11,14 @@
     "api": {
       "username": "root@openhim.org",
       "password": "openhim-password",
-      "apiURL": "https://namanga.openmrs.org:8093",
+      "apiURL": "https://openhim.openmrs.org",
       "trustSelfSigned": true,
       "urn": ""
     },
     "register": false
   },
   "fhirServer": {
-    "baseURL": "http://namanga.openmrs.org:8092/fhir",
+    "baseURL": "http://hapifhir.openmrs.org/fhir",
     "username": "hapi",
     "password": "hapi"
   },
