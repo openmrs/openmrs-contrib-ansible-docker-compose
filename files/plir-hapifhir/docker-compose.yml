@@ -1,7 +1,7 @@
 version: "3"
 services:
   plir-hapi:
-    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir_v2
+    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir_v3
     container_name: plir_hapi_auth
     restart: always
     ports:
