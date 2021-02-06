@@ -50,7 +50,19 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9200"]
       timeout: 20s    
    
-
+  backup:
+    image: openmrsinfra/cron-backup:latest
+    depends_on:
+      - es
+    volumes:
+      - data01:/es_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/es_data:plir_es_data
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 
 volumes:
   data01:
