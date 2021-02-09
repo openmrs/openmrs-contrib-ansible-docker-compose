@@ -7,6 +7,22 @@ services:
     expose: 
       - "27017"
     image: mongo:3.4
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: "exit 0"
+
+  backup:
+    image: openmrsinfra/cron-backup:latest
+    depends_on:
+      - mongo-plir
+    volumes:
+      - mongodb-data:/mongodb-data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mongodb-data:plir_openmhinm_data
+      - SCHEDULE=0 0 * * *
+    restart: always
     healthcheck:
       test: "exit 0"
     
@@ -43,3 +59,6 @@ services:
     volumes:
       - ./default.json:/usr/share/nginx/html/config/default.json
     
+volumes:
+  mongodb_data:
+    driver: local
