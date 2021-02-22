@@ -4,33 +4,39 @@ services:
 
   addonindex:
     restart: "always"
-    image: openmrs/addonindex:latest
+    image: docker.io/openmrs/addonindex:latest
     ports:
       - "8081:8080"
     environment:
-      - spring.elasticsearch.jest.uris=http://elasticsearch:9200
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
       - bintray.username
       - bintray.api_key
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      timeout: 5s
+      test: ["CMD", "curl", "-sSL", "http://localhost:8080/"]
+      timeout: 15s
+    links:
+      - elasticsearch
     depends_on:
       elasticsearch:
         condition: service_healthy
 
   elasticsearch:
     restart: "always"
-    image: elasticsearch:5.1
-    expose:
-      - "9200"
-      - "9300"
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
     environment:
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    #volumes:
-    #  - esdata:/usr/share/elasticsearch/data
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "discovery.type=single-node"
+    volumes:
+     - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/"]
+      test: ["CMD", "curl", "-sSL", "http://localhost:9200/_cluster/health"]
+      interval: 30s
       timeout: 15s
+      retries: 3
 
-#volumes:
-#  esdata:
+volumes:
+ esdata:
