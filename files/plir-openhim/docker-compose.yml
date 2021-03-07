@@ -4,8 +4,6 @@ services:
   mongo-plir:
     restart: "always"
     container_name: openhim-mongo-plir
-    expose: 
-      - "27017"
     image: mongo:3.4
     volumes:
       - mongodb_data:/data/db
@@ -36,12 +34,6 @@ services:
     ports:
       - "5555:5001"
       - "8093:8080"
-    expose :
-      - "5000"
-      - "5050"
-      - "5051"
-      - "5052"
-      - "7788"
     healthcheck:
       test: "exit 0"   
     depends_on:
