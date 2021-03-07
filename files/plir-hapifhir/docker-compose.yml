@@ -1,8 +1,8 @@
 version: "3"
 services:
   plir-hapi:
-    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir_v3
-    container_name: plir_hapi_auth
+    image: openmrsinfra/openmrs-hapi-fhir:openmrs-fhir-plir_cql
+    container_name: plir_hapi_fhir_cql
     restart: always
     ports:
       - "8091:8080"
