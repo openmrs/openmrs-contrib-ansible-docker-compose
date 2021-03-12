@@ -32,7 +32,6 @@ services:
       - mongo_url=mongodb://mongo-plir/openhim
       - mongo_atnaUrl=mongodb://mongo-plir/openhim
     volumes:
-      - /etc/letsencrypt/live/namanga.openmrs.org:/etc/letsencrypt/live/namanga.openmrs.org
       - ./core-config.json:/usr/src/app/config/default.json  
     ports:
       - "5555:5001"
