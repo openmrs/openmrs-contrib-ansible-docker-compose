@@ -146,7 +146,7 @@
       "startupDelay": 500
     },
     "certificateManagement": {
-      "watchFSForCert": false,
+      "watchFSForCert": true,
       "certPath": "/etc/letsencrypt/live/namanga.openmrs.org/fullchain.pem",
       "keyPath": "/etc/letsencrypt/live/namanga.openmrs.org/privkey.pem"
     }
