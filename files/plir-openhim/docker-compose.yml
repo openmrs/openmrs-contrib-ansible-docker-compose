@@ -31,6 +31,8 @@ services:
     environment:
       - mongo_url=mongodb://mongo-plir/openhim
       - mongo_atnaUrl=mongodb://mongo-plir/openhim
+    volumes:
+      - ./core-config.json:/usr/src/app/config/default.json  
     ports:
       - "5555:5001"
       - "8093:8080"
