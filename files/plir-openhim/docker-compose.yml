@@ -25,6 +25,7 @@ services:
       test: "exit 0"
     
   core-plir:
+    dns: 8.8.8.8
     restart: "always"
     container_name: openhim-core-plir
     image: jembi/openhim-core:latest
@@ -42,6 +43,7 @@ services:
       - mongo-plir
   
   console-plir:
+    dns: 8.8.8.8
     restart: "always"
     container_name: openhim-console-plir
     image: jembi/openhim-console:latest
