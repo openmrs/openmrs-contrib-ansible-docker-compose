@@ -1,12 +1,13 @@
 version: '2.1'
 
+# Temporarily (during transition to API 2, we deploy QA (last commit) version of client against staging database on AWS
 services:
   oclclient:
-    image: openmrs/ocl-client:stg
+    image: openmrs/ocl-client:qa
     environment:
       - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.aws.openconceptlab.org}
       - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.staging.aws.openconceptlab.org}
-      - ENVIRONMENT=${ENVIRONMENT:-stg}
+      - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
       - 8085:80
     restart: always
