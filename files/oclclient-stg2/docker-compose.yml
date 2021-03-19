@@ -1,6 +1,6 @@
 version: '2.1'
 
-# Temporarily (during transition to API 2, we deploy QA (last commit) version of client against staging database on AWS
+# Temporarily (during transition to API 2), we deploy QA (last commit) version of client against staging API v2 on AWS
 services:
   oclclient:
     image: openmrs/ocl-client:qa
