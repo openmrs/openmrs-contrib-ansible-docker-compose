@@ -4,8 +4,8 @@ services:
   oclclient:
     image: openmrs/ocl-client:stg
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.openconceptlab.org}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.v1.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.v1.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-stg}
     ports:
       - 8082:80
