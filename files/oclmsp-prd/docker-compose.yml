@@ -4,7 +4,7 @@ services:
   oclmsp:
     image: openconceptlab/oclmsp:production
     environment:
-      - OCL_DOMAIN=${OCL_DOMAIN:-openconceptlab.org}
+      - OCL_DOMAIN=${OCL_DOMAIN:-v1.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-production}
 #    ports:
 #      - 8082:80
