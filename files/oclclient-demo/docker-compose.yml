@@ -4,8 +4,8 @@ services:
   oclclient:
     image: openmrs/ocl-client:demo
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.demo.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://demo.openconceptlab.org}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.demo.v1.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://demo.v1.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-demo}
     ports:
       - 8081:80
