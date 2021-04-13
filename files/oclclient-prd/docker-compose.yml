@@ -1,11 +1,11 @@
-version: '2.1'
+version: "2.1"
 
 services:
   oclclient:
-    image: openmrs/ocl-client:prd
+    image: openmrs/ocl-client:prd-v1
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://openconceptlab.org}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.v1.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://v1.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-prd}
     ports:
       - 8081:80

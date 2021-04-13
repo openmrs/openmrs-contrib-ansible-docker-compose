@@ -1,10 +1,10 @@
-version: '2.1'
+version: "2.1"
 
 services:
   oclclient:
     image: openmrs/ocl-client:qa
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.qa.v1.openconceptlab.org}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.v1.openconceptlab.org}
       - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://qa.v1.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:

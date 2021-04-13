@@ -1,8 +1,8 @@
-version: '2.1'
+version: "2.1"
 
 services:
   oclclient:
-    image: openmrs/ocl-client:stg
+    image: openmrs/ocl-client:stg-v1
     environment:
       - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.v1.openconceptlab.org}
       - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.v1.openconceptlab.org}

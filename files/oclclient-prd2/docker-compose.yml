@@ -1,13 +1,12 @@
-version: '2.1'
+version: "2.1"
 
-# Temporarily (during transition to API 2), we deploy QA (last commit) version of client against production API v2 on AWS
 services:
   oclclient:
-    image: openmrs/ocl-client:qa
+    image: openmrs/ocl-client:prd
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.aws.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.aws.openconceptlab.org}
-      - ENVIRONMENT=${ENVIRONMENT:-qa}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.openconceptlab.org}
+      - ENVIRONMENT=${ENVIRONMENT:-prd}
     ports:
       - 8083:80
     restart: always
