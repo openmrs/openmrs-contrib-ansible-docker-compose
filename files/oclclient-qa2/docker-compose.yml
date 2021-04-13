@@ -5,7 +5,7 @@ services:
     image: openmrs/ocl-client:qa
     environment:
       - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.qa.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.staging.openconceptlab.org}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
       - 8084:80
