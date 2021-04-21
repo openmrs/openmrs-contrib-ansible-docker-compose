@@ -6,6 +6,7 @@ services:
     environment:
       - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.v1.openconceptlab.org}
       - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.v1.openconceptlab.org}
+      - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.staging.openconceptlab.org/#/accounts/signup}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
       - 8081:80
