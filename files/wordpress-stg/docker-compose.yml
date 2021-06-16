@@ -25,6 +25,7 @@ services:
       # WORDPRESS_DEBUG: 1
     volumes:
       - wordpress-content:/var/www/html/wp-content
+      - ./custom.ini:/usr/local/etc/php/conf.d/custom.ini
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
 
