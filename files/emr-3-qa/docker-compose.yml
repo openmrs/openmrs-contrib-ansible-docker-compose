@@ -6,6 +6,8 @@ services:
     image: openmrs/openmrs-reference-application-3-gateway:latest
     ports:
       - 8084:80
+    healthcheck:
+      test: exit 0 
 
   # Frontend
   frontend:
