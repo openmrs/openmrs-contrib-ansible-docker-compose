@@ -4,11 +4,13 @@ services:
   oclclient:
     image: openmrs/ocl-client:qa
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.v1.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://staging.v1.openconceptlab.org}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.staging.openconceptlab.org}
+      - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.staging.openconceptlab.org/#/accounts/signup}
+      - OCL_GA_TOKENS=${OCL_GA_TOKENS}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
-      - 8081:80
+      - 8084:80
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-sSf", "localhost"]
