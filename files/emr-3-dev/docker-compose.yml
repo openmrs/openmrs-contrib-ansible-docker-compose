@@ -8,6 +8,8 @@ services:
       - "8084:80"
     healthcheck:
       test: exit 0 
+    volumes:
+      - "./proxy.conf:/usr/local/apache2/conf/extra/proxy.conf"
 
   # Frontend
   frontend:
@@ -15,6 +17,7 @@ services:
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
+      SPA_CONFIG_URLS: "https://spa-modules.nyc3.digitaloceanspaces.com/@openmrs/config/config.json"
     healthcheck:
       test: ["CMD", "curl", "-fsSL", "http://localhost:8080/ui/index.html"]
       timeout: 5s
@@ -47,6 +50,9 @@ services:
       MYSQL_USER: ${OPENMRS_DB_USER:-openmrs}
       MYSQL_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      timeout: 5s
     volumes:
       - db-data:/var/lib/mysql
 
