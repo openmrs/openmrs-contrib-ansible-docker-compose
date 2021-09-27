@@ -9,7 +9,7 @@ services:
     healthcheck:
       test: exit 0 
     volumes:
-      - "./proxy.conf:/usr/local/apache2/conf/extra/proxy.conf"
+      - "./proxy.conf:/etc/nginx/nginx.conf"
 
   # Frontend
   frontend:
