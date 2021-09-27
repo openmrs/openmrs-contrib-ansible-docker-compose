@@ -52,7 +52,7 @@ services:
       MYSQL_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      test: ["CMD", "sh", "-c" "mysqladmin ping --silent --password=${MYSQL_ROOT_PASSWORD:-Admin123}"]
       timeout: 5s
     volumes:
       - db-data:/var/lib/mysql
