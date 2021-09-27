@@ -4,6 +4,9 @@ services:
   # Proxy
   proxy:
     image: openmrs/openmrs-reference-application-3-gateway:latest
+    depends_on:
+      - frontend
+      - openmrs
     ports:
       - "8084:80"
     healthcheck:
