@@ -21,7 +21,6 @@ services:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
       SPA_CONFIG_URLS: "https://spa-modules.nyc3.digitaloceanspaces.com/@openmrs/config/config.json"
-      IMPORTMAP_URL: "https://spa-modules.nyc3.digitaloceanspaces.com/import-map.json"
     healthcheck:
       test: ["CMD", "curl", "-fsSL", "http://localhost/ui/index.html"]
       timeout: 5s
