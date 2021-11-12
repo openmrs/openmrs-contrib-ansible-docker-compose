@@ -32,7 +32,7 @@ services:
       - db
     environment:
       OMRS_CONFIG_MODULE_WEB_ADMIN: "false"
-      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "false"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
       OMRS_CONFIG_CREATE_TABLES: "true"
       OMRS_CONFIG_CONNECTION_SERVER: db
       OMRS_CONFIG_CONNECTION_DATABASE: ${OPENMRS_DB:-openmrs}
