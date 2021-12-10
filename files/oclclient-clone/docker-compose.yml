@@ -1,0 +1,15 @@
+version: "2.1"
+
+services:
+  oclclient:
+    image: openmrs/ocl-client:clone
+    environment:
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.staging.openconceptlab.org}
+      - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.staging.openconceptlab.org/#/accounts/signup}
+      - ENVIRONMENT=${ENVIRONMENT:-qa}
+    ports:
+      - 8085:80
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-sSf", "localhost"]
