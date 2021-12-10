@@ -9,7 +9,7 @@ services:
       - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.staging.openconceptlab.org/#/accounts/signup}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
-      - 8085:80
+      - 8086:80
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-sSf", "localhost"]
