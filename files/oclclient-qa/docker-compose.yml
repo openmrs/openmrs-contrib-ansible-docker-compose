@@ -4,9 +4,9 @@ services:
   oclclient:
     image: openmrs/ocl-client:qa
     environment:
-      - OCL_API_HOST=${OCL_API_HOST:-https://api.staging.openconceptlab.org}
-      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.staging.openconceptlab.org}
-      - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.staging.openconceptlab.org/#/accounts/signup}
+      - OCL_API_HOST=${OCL_API_HOST:-https://api.dev.openconceptlab.org}
+      - TRADITIONAL_OCL_HOST=${TRADITIONAL_OCL_HOST:-https://app.dev.openconceptlab.org}
+      - OCL_SIGNUP_URL=${OCL_SIGNUP_URL:-https://app.dev.openconceptlab.org/#/accounts/signup}
       - OCL_GA_TOKENS=${OCL_GA_TOKENS}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
