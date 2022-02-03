@@ -5,7 +5,6 @@ services:
   proxy:
     image: openmrs/openmrs-reference-application-3-gateway:latest
     depends_on:
-      - frontend
       - openmrs
     ports:
       - "8084:80"
@@ -13,17 +12,6 @@ services:
       test: exit 0 
     volumes:
       - "./proxy.conf:/etc/nginx/nginx.conf"
-
-  # Frontend
-  frontend:
-    image: openmrs/openmrs-reference-application-3-frontend:latest
-    environment:
-      SPA_PATH: /openmrs/spa
-      API_URL: /openmrs
-      SPA_CONFIG_URLS: "https://spa-modules.nyc3.digitaloceanspaces.com/@openmrs/config/config.json"
-    healthcheck:
-      test: ["CMD", "curl", "-fsSL", "http://localhost/ui/index.html"]
-      timeout: 5s
 
   # OpenMRS:
   openmrs:
