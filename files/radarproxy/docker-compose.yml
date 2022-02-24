@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  web:
+    image: openmrsinfra/radarproxy
+    ports:
+     - "8085:3000"
+    environment:
+      - SPREADSHEET_ID
+      - PUBLISHED_SHEET_NAME_RANGE
+      - DATA_RANGE
+      - PORT
+      - RATE_LIMIT_WINDOW_MINUTES
+      - RATE_LIMIT_MAX_REQUESTS_IN_WINDOW
+    volumes:
+      - ./.credentials.json:/app/.credentials.json
