@@ -14,3 +14,7 @@ services:
       - RATE_LIMIT_MAX_REQUESTS_IN_WINDOW
     volumes:
       - ./.credentials.json:/app/.credentials.json
+    restart: always
+    healthcheck:
+      test: curl -f http://localhost:3000/ || exit 1
+      timeout: 3s
