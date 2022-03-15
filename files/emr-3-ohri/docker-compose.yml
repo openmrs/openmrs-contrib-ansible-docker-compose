@@ -7,7 +7,7 @@ services:
     depends_on:
       - openmrs
     ports:
-      - "8084:80"
+      - "8086:80"
     healthcheck:
       test: exit 0 
     volumes:
