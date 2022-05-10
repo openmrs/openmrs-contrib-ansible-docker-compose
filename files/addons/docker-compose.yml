@@ -12,7 +12,7 @@ services:
       - BINTRAY_USERNAME
       - BINTRAY_API_KEY
     healthcheck:
-      test: ["CMD", "curl", "-sSL", "http://localhost:8080/"]
+      test:  ["CMD-SHELL", "[ $$(ps -o comm= -p 1) = \"java\" ]"]
       timeout: 15s
     links:
       - elasticsearch
