@@ -4,3 +4,5 @@ services:
     image: dkibet/formbuilder
     ports:
       - 8087:80
+    environment:
+      - OPENMRS_HOST_URL
