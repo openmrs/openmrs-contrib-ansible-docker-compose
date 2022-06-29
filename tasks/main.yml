@@ -11,4 +11,9 @@
     - restart docker compose
 
 
-- include: autodeploy.yaml
+- name: copy autodeploy files
+  copy: src="{{ role_path }}/files/{{item}}" dest="/usr/local/bin"
+  mode: "0755"
+  with_items:
+    - "deploy-compose"
+    - "deploy-compose-if-newer"
