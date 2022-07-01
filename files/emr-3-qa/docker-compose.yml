@@ -3,12 +3,12 @@ version: "3.7"
 services:
   # Proxy
   proxy:
-    image: openmrs/openmrs-reference-application-3-gateway:demo
+    image: openmrs/openmrs-reference-application-3-gateway:qa
     depends_on:
       - frontend
       - openmrs
     ports:
-      - "8085:80"
+      - "8086:80"
     healthcheck:
       test: exit 0 
     volumes:
@@ -16,7 +16,7 @@ services:
 
   # Frontend
   frontend:
-    image: openmrs/openmrs-reference-application-3-frontend:demo
+    image: openmrs/openmrs-reference-application-3-frontend:qa
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
@@ -27,7 +27,7 @@ services:
 
   # OpenMRS:
   openmrs:
-    image: openmrs/openmrs-reference-application-3-backend:demo
+    image: openmrs/openmrs-reference-application-3-backend:qa
     depends_on:
       - db
     environment:
