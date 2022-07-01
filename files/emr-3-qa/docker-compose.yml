@@ -8,7 +8,7 @@ services:
       - frontend
       - openmrs
     ports:
-      - "8086:80"
+      - "8088:80"
     healthcheck:
       test: exit 0 
     volumes:
