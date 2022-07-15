@@ -3,12 +3,12 @@ version: '3.1'
 services:
 
   wordpress:
-    image: wordpress:4.9.1
+    image: wordpress:5.7.2
     restart: always
     depends_on:
       - mysql
     ports:
-      - 8080:80
+      - 8081:80
     environment:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-testing123}
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
@@ -22,8 +22,10 @@ services:
       WORDPRESS_SECURE_AUTH_SALT: ${WORDPRESS_SECURE_AUTH_SALT:-secureauthsalt}
       WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT:-loggedinsalt}
       WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT:-noncesalt}
+      # WORDPRESS_DEBUG: 1
     volumes:
       - wordpress-content:/var/www/html/wp-content
+      - ./custom.ini:/usr/local/etc/php/conf.d/custom.ini
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
 
