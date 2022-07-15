@@ -49,7 +49,7 @@ fi
 
 containers=$(docker-compose ps -q)
 n=0
-until [ $n -ge 60 ]
+until [ $n -ge 20 ]
 do
   echo "Verifying if docker containers ${containers} are healthy"
   health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers | sort -u )
