@@ -38,6 +38,7 @@ services:
       - mongodb
     volumes:
       - mongo-data:/mongo_data
+      - id-globalnavbar:/globalnavbar
       - ${BACKUP_DIR-./backups}:/backup
     environment:
       - DIRS=/mongo_data:mongo_data,/globalnavbar:id-globalnavbar
