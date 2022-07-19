@@ -10,7 +10,7 @@ services:
       - OCL_GA_TOKENS=${OCL_GA_TOKENS}
       - ENVIRONMENT=${ENVIRONMENT:-qa}
     ports:
-      - 8085:80
+      - 8094:80
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-sSf", "localhost"]
