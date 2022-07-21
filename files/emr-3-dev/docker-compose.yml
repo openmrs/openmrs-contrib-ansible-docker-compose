@@ -3,7 +3,7 @@ version: "3.7"
 services:
   # Proxy
   proxy:
-    image: openmrs/openmrs-reference-application-3-gateway:latest
+    image: openmrs/openmrs-reference-application-3-gateway:nightly
     depends_on:
       - openmrs
     ports:
@@ -15,7 +15,7 @@ services:
 
   # OpenMRS:
   openmrs:
-    image: openmrs/openmrs-reference-application-3-backend:latest
+    image: openmrs/openmrs-reference-application-3-backend:nightly
     depends_on:
       - db
     environment:
