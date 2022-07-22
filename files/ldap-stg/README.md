@@ -6,6 +6,9 @@ LDAP STG (with some test data).
 You can check files in `bootstrap` ldif files; passwords will be exactly the same as
 the username. Check the readme inside the folder for details.
 
+If you want to use the test data, copy the contents of `test-data` into `bootstrap` before starting the container
+(or make sure `TEST_DATA_DIR` is not defined in your `.env` file).
+
 By default, it will answer using SSL (but you need to skip certificate verification, as it's self-signed).
 
 
