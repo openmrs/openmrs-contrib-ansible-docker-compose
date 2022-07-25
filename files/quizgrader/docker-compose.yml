@@ -7,7 +7,7 @@ services:
     env_file:
      - .env
     ports:
-      - "8081:80"
+      - "8084:80"
     environment:
       - NODE_ENV=production
     healthcheck:
