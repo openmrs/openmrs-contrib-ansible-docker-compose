@@ -5,6 +5,7 @@
 ENVIRONMENT=$1
 FORCE_DESTROY_VOLUMES=${2:-false}
 FORCE_RESTART=${3:-false}
+SERVICE=${4:-''}
 
 cd /root/docker/$ENVIRONMENT
 
@@ -14,7 +15,7 @@ if [ "${EXITED_IMAGES}" != "" ]; then
   docker rm ${EXITED_IMAGES}
 fi
 
-docker-compose pull
+docker-compose pull ${SERVICE}
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
@@ -36,7 +37,7 @@ if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DEST
     echo "Forcing restarts"
     compose_params="--force-recreate"
   fi
-  docker-compose up -d --no-build --remove-orphans ${compose_params}
+  docker-compose up -d --no-build --remove-orphans ${compose_params} ${SERVICE}
 else
   echo "Recreating all images and volumes"
   docker-compose down -v
@@ -44,7 +45,7 @@ else
     echo "Restoring backup ${RESTORE_BACKUP}"
     docker-compose run --rm backup bash restore.sh "${RESTORE_BACKUP}"
   fi
-  docker-compose up -d --no-build
+  docker-compose up -d --no-build ${SERVICE}
 fi
 
 containers=$(docker-compose ps -q)
