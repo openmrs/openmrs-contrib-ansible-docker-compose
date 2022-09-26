@@ -3,7 +3,7 @@ version: "3.7"
 services:
   # Proxy
   proxy:
-    image: openmrs/openmrs-reference-application-3-gateway:nightly
+    image: openmrs/openmrs-reference-application-3-gateway:dev3
     depends_on:
       - frontend
       - backend
@@ -16,7 +16,7 @@ services:
 
   # Frontend
   frontend:
-    image: openmrs/openmrs-reference-application-3-frontend:demo
+    image: openmrs/openmrs-reference-application-3-frontend:dev3
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
@@ -27,7 +27,7 @@ services:
 
   # OpenMRS:
   backend:
-    image: openmrs/openmrs-reference-application-3-backend:nightly
+    image: openmrs/openmrs-reference-application-3-backend:dev3
     depends_on:
       - db
     environment:
