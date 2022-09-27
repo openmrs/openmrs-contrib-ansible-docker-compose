@@ -48,7 +48,7 @@ services:
       - web-data:/web_data
       - ${BACKUP_DIR-/opt/backups}:/backup
     environment:
-      - DIRS=/db_data:cieladmin_db,/web_data:cieladmin_web
+      - DIRS=/db_data:cieladmin-db,/web_data:cieladmin-web
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
