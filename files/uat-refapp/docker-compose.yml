@@ -24,13 +24,13 @@ services:
     ports:
       - "8083:8080"
     environment:
-      OMRS_DB_NAME: ${MYSQL_DB:-openmrs}
-      OMRS_DB_HOSTNAME: openmrs-referenceapplication-mysql
-      OMRS_DB_USERNAME: ${MYSQL_USER:-openmrs}
-      OMRS_DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
-      OMRS_CREATE_TABLES: 'false'
-      OMRS_AUTO_UPDATE_DATABASE: 'true'
-      OMRS_MODULE_WEB_ADMIN: 'false'
+      DB_DATABASE: ${MYSQL_DB:-openmrs}
+      DB_HOST: openmrs-referenceapplication-mysql
+      DB_USERNAME: ${MYSQL_USER:-openmrs}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-Admin123}
+      DB_CREATE_TABLES: 'false'
+      DB_AUTO_UPDATE: 'false'
+      MODULE_WEB_ADMIN: 'false'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/"]
       timeout: 20s
