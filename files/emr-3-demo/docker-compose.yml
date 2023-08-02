@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   # Proxy
-  proxy:
+  gateway:
     image: openmrs/openmrs-reference-application-3-gateway:demo
     restart: "unless-stopped"
     depends_on:
