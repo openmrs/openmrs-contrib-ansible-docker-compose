@@ -7,7 +7,7 @@ services:
     restart: "unless-stopped"
     depends_on:
       - frontend
-      - openmrs
+      - backend
     ports:
       - "8091:80"
     healthcheck:
