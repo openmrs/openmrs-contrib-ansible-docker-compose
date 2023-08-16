@@ -45,7 +45,6 @@ services:
       timeout: 5s
     volumes:
       - openmrs-data:/openmrs/data
-      - ./liquibase:/openmrs/distribution/openmrs_config/liquibase/
 
   # MariaDB
   db:
