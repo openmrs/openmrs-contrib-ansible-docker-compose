@@ -1,34 +1,38 @@
 version: '3'
 
 services:
-  postgres:
+  db:
     image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: "pg_isready -U postgres"
+    restart: "always"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-keycloak}
-      POSTGRES_USER: ${POSTGRES_USER:-keycloak}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-    restart: "always"
   keycloak:
     image: openmrs/openmrs-id-keycloak:latest
+    depends_on:
+      - db
     environment:
-      - KC_HOSTNAME=${HOSTNAME:-localhost}
+      - KC_HOSTNAME=${HOSTNAME}
       - KC_DB=postgres
-      - KC_DB_URL_DATABASE=${POSTGRES_DB:-keycloak}
-      - KC_DB_URL_HOST=postgres
-      - KC_DB_URL_PORT=5432
-      - KC_DB_USERNAME=${POSTGRES_USER:-keycloak}
-      - KC_DB_PASSWORD=${POSTGRES_PASSWORD:-password}
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-password}
+      - KC_DB_URL=jdbc:postgresql://db:5432/
+      - KC_DB_USERNAME=${POSTGRES_USER}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=Admin123
       - KC_PROXY:${KC_PROXY:-none}
       - PROXY_ADDRESS_FORWARDING=${PROXY_ADDRESS_FORWARDING:-false}
+    healthcheck:
+      test: curl --silent --fail --insecure https://localhost:8080/health/ || exit 1
     restart: "always"
     ports:
-      - "8443:8443"
-    depends_on:
-      - postgres
+      # Use when running locally
+      #- "8443:8443"
+      - "8080:8080"
   postfix:
     image: openmrs/openmrs-id-postfix:latest
     ports:
