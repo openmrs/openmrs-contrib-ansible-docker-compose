@@ -19,19 +19,19 @@ services:
     environment:
       - KC_HOSTNAME=${HOSTNAME}
       - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://db:5432/
+      - KC_DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=Admin123
-      - KC_PROXY:${KC_PROXY:-none}
+      - KC_PROXY=${KC_PROXY:-none}
       - PROXY_ADDRESS_FORWARDING=${PROXY_ADDRESS_FORWARDING:-false}
     healthcheck:
       test: curl --silent --fail --insecure https://localhost:8080/health/ || exit 1
     restart: "always"
     ports:
       # Use when running locally
-      #- "8443:8443"
+#      - "8443:8443"
       - "8080:8080"
   postfix:
     image: openmrs/openmrs-id-postfix:latest
