@@ -10,6 +10,9 @@ services:
     environment:
       LDAP_ADMIN_USERNAME: ${LDAP_ADMIN_USERNAME:-admin}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-Admin123}
+      LDAP_CONFIG_ADMIN_ENABLED: ${LDAP_CONFIG_ADMIN_ENABLED:-yes}
+      LDAP_CONFIG_ADMIN_USERNAME: ${LDAP_CONFIG_ADMIN_USERNAME:-configadmin}
+      LDAP_CONFIG_ADMIN_PASSWORD: ${LDAP_CONFIG_ADMIN_PASSWORD:-Configadmin123}
     healthcheck:
       test: "exit 0"
     volumes:
