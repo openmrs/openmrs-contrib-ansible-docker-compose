@@ -1,4 +1,0 @@
-dn: olcDatabase={1}{{ LDAP_BACKEND }},cn=config
-changetype: modify
-replace: olcSizeLimit
-olcSizeLimit: -1

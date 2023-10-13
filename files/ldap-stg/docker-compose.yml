@@ -4,35 +4,33 @@ version: '3'
 services:
   openldap:
     restart: "always"
-    image: osixia/openldap:1.5.0
-    container_name: openldap       # used by letsencrypt hook
-    command: "--copy-service"
+    image: bitnami/openldap:2.6.6
     ports:
-      - 3389:389
-      - 636:636
+      - 1389:1389
     environment:
-      LDAP_ORGANISATION: OpenMRS
-      LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
-      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
-      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
-      LDAP_TLS: ${LDAP_TLS:-true}
-      LDAP_TLS_CRT_FILENAME: ${LDAP_TLS_CRT_FILENAME:-ldap.crt}
-      LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-ldap.key}
-      LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-ca.crt}
-      LDAP_TLS_VERIFY_CLIENT: never
-      LDAP_LOG_LEVEL: 0
+      LDAP_ADMIN_USERNAME: ${LDAP_ADMIN_USERNAME:-admin}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-Admin123}
     healthcheck:
       test: "exit 0"
     volumes:
-      - config-ldap:/etc/ldap/slapd.d
-      - database-ldap:/var/lib/ldap
-      - ${CERTS_DIR-./certs}:/container/service/slapd/assets/certs/
-      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - database-ldap:/bitnami/openldap/data
+      - config-ldap:/bitnami/openldap/slapd.d
 
-      # Only adds test data locally
-      - ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
-      - ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
+  backup:
+    image: openmrsinfra/cron-backup:latest
+    depends_on:
+      - openldap
+    volumes:
+      - config-ldap:/ldap_config_data
+      - database-ldap:/ldap_database_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"
 
 volumes:
-  config-ldap:
   database-ldap:
+  config-ldap:
