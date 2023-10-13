@@ -1,40 +1,44 @@
-version: "3"
+version: '3'
+
 services:
-  mongodb:
-    restart: "always"
-    image: mongo:3.4.9
-    healthcheck:
-      test: ["CMD", "mongo", "--quiet", "localhost/test", "--eval", "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 1)';"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-    volumes:
-      - mongo-data:/data/db
-      - mongo-backup:/opt/backup
-
-  id-web:
-    restart: "always"
-    image: openmrsinfra/id:staging
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file: .env
+  db:
+    image: postgres
     environment:
-      NODE_ENV: "production"
-      NODE_TLS_REJECT_UNAUTHORIZED: "0"
-    depends_on:
-      - mongodb
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD", "curl", "localhost:3000"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
+      test: "pg_isready -U postgres"
+    restart: "always"
     volumes:
-      - id-globalnavbar:/opt/id/app/user-modules/openmrs-contrib-id-globalnavbar/data
-      - id-logs:/opt/id/logs
-
-
+      - postgres_data:/var/lib/postgresql/data
+  keycloak:
+    image: openmrs/openmrs-id-keycloak:latest
+    depends_on:
+      - db
+    environment:
+      - KC_HOSTNAME=${HOSTNAME}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - KC_DB_USERNAME=${POSTGRES_USER}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=Admin123
+      - KC_PROXY=${KC_PROXY:-none}
+      - PROXY_ADDRESS_FORWARDING=${PROXY_ADDRESS_FORWARDING:-false}
+    healthcheck:
+      test: curl --silent --fail --insecure https://localhost:8080/health/ || exit 1
+    restart: "always"
+    ports:
+      # Use when running locally
+#      - "8443:8443"
+      - "8080:8080"
+  postfix:
+    image: openmrs/openmrs-id-postfix:latest
+    ports:
+      - "25:25"
 volumes:
-  mongo-data:
-  mongo-backup:
-  id-globalnavbar:
-  id-logs:
+  postgres_data:
+    driver: local
+  postfix_data:
+    driver: local
