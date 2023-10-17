@@ -13,7 +13,7 @@ services:
       LDAP_CONFIG_ADMIN_ENABLED: ${LDAP_CONFIG_ADMIN_ENABLED:-yes}
       LDAP_CONFIG_ADMIN_USERNAME: ${LDAP_CONFIG_ADMIN_USERNAME:-configadmin}
       LDAP_CONFIG_ADMIN_PASSWORD: ${LDAP_CONFIG_ADMIN_PASSWORD:-Configadmin123}
-      LDAP_ALLOW_ANON_BINDING: no
+      LDAP_ALLOW_ANON_BINDING: 'no'
     healthcheck:
       test: ldapsearch -H 'ldap://127.0.0.1:1389' >/dev/null; if [[ $$? == 53 ]]; then echo 0; else echo 1; fi
     volumes:
