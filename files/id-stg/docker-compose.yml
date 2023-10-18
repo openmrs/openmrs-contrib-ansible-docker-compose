@@ -31,8 +31,6 @@ services:
       - "8080:8080"
   postfix:
     image: openmrsinfra/openmrs-id-postfix:nightly
-    ports:
-      - "389:389" # Make LDAP running on host available to postfix
     environment:
       - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
