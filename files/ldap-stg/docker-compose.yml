@@ -28,7 +28,7 @@ services:
     volumes:
       - config-ldap:/ldap_config_data
       - database-ldap:/ldap_database_data
-      - ${BACKUP_DIR-./backups}:/backup
+      - /opt/backups:/backup
     environment:
       - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
       - SCHEDULE=0 0 * * *
