@@ -1,0 +1,6 @@
+dn: olcOverlay=ppolicy,olcDatabase={1}{{ LDAP_BACKEND }},cn=config
+objectClass: olcPpolicyConfig
+olcOverlay: ppolicy
+olcPPolicyDefault: cn=ppolicy,{{ LDAP_BASE_DN }}
+olcPPolicyUseLockout: FALSE
+olcPPolicyHashCleartext: TRUE

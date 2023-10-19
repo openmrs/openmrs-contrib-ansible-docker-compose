@@ -19,6 +19,7 @@ services:
     volumes:
       - database-ldap:/bitnami/openldap/data
       - config-ldap:/bitnami/openldap/slapd.d
+      - ./bootstrap:/ldifs
 
   backup:
     image: openmrsinfra/cron-backup:latest

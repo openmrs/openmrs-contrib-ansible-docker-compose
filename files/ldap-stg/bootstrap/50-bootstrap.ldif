@@ -1,0 +1,42 @@
+dn: ou=users,{{ LDAP_BASE_DN }}
+ou: users
+description: OpenMRS Users
+objectClass: organizationalUnit
+
+dn: ou=groups,{{ LDAP_BASE_DN }}
+ou: groups
+description: OpenMRS User Groups
+objectClass: organizationalUnit
+
+dn: ou=system,{{ LDAP_BASE_DN }}
+ou: system
+description: System accounts used by applications
+objectClass: organizationalUnit
+
+dn: ou=policy,{{ LDAP_BASE_DN }}
+ou: policy
+description: Directory Policies
+objectClass: organizationalUnit
+
+dn: cn=password,ou=policy,{{ LDAP_BASE_DN }}
+description: ppolicy configuration
+pwdAttribute: 2.5.4.35
+objectClass: device
+objectClass: pwdPolicy
+pwdMinLength: 8
+pwdCheckQuality: 1
+pwdSafeModify: TRUE
+pwdLockout: TRUE
+cn: password
+
+dn: cn=reset,ou=policy,{{ LDAP_BASE_DN }}
+cn: reset
+description: ppolicy configuration
+objectClass: device
+objectClass: pwdPolicy
+objectClass: top
+pwdAttribute: 2.5.4.35
+pwdCheckQuality: 1
+pwdMinLength: 8
+pwdLockout: TRUE
+pwdSafeModify: FALSE

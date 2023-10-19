@@ -1,0 +1,20 @@
+dn: uid=omrsid,ou=system,{{ LDAP_BASE_DN }}
+objectClass: account
+objectClass: simpleSecurityObject
+description: OpenMRS ID system account
+uid: omrsid
+userPassword:: e1NTSEF9UXlaaVM1TUVkcVJYNFk3NWRvcFFHclNTeWRHc1ZTUmM=
+
+dn: uid=atlas,ou=system,{{ LDAP_BASE_DN }}
+objectClass: account
+objectClass: simpleSecurityObject
+description: Atlas system account
+uid: atlas
+userPassword:: e1NTSEF9ZEw2QVBlV21WczF6TmtCbDNxcGlYZTd4Z1BZR09RbHQ=
+
+dn: uid=crowd,ou=system,{{ LDAP_BASE_DN }}
+objectClass: account
+objectClass: simpleSecurityObject
+description: Crowd system account
+uid: crowd
+userPassword:: e1NTSEF9R1JVTndLektjQUx5WUR2ZFd6bmI1SGFqaXZRbEhMVGs=

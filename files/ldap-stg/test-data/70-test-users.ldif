@@ -1,0 +1,19 @@
+dn: uid=testadmin,ou=users,{{ LDAP_BASE_DN }}
+uid: testadmin
+userPassword:: e1NTSEF9UklObmRDblpCb2lSdWxsQlV6MVJ6b2swTWVMeWIzTlU=
+cn: Admin
+sn: User
+displayName: Test Admin User
+mail: testadminuser@gmail.com
+objectClass: inetOrgPerson
+objectClass: extensibleObject
+
+dn: uid=test,ou=users,{{ LDAP_BASE_DN }}
+uid: test
+userPassword:: e1NTSEF9MURYUEJVNWZGd2ZmaURidTJyaVcrRTFGOGMzNjVOajQ=
+cn: Test
+sn: User
+displayName: Test User
+mail: testuser@gmail.com
+objectClass: inetOrgPerson
+objectClass: extensibleObject
