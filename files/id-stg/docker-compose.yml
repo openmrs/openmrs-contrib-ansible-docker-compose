@@ -25,20 +25,23 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
       - KC_PROXY=${KC_PROXY:-edge}
     healthcheck:
-      test: curl --silent --fail --insecure https://localhost:8080/health/ || exit 1
+      test: curl --head -fsS http://localhost:8080/health/live || exit 1
     restart: "always"
     ports:
       - "8080:8080"
   postfix:
     image: openmrsinfra/openmrs-id-postfix:nightly
     environment:
+      - POSTFIX_HOSTNAME=${POSTFIX_HOSTNAME:-id-stg.openmrs.org}
       - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
-      - SMTP_USERNAME=${SMTP_USERNAME:-username}
-      - SMTP_PASSWORD=${SMTP_PASSWORD:-password}
-      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-password}
-      - LDAP_HOST=${LDAP_HOST:-localhost}
+      - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-Smtp123}
+      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-Ldap123}
+      - LDAP_HOST=${LDAP_HOST:-host.docker.internal}
       - LDAP_PORT=${LDAP_PORT:-389}
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Make LDAP on host available to postfix
 volumes:
   postgres_data:
     driver: local
