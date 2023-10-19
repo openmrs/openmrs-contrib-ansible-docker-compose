@@ -29,6 +29,8 @@ services:
     restart: "always"
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Make LDAP on host available to keycloak
   postfix:
     image: openmrsinfra/openmrs-id-postfix:nightly
     environment:
