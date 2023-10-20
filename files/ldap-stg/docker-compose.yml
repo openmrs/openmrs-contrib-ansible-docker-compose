@@ -1,5 +1,10 @@
 ---
-version: '3'
+version: '3.5'
+
+networks:
+  ldap-stg:
+    name: ldap-stg
+    driver: bridge
 
 services:
   openldap:
@@ -8,12 +13,15 @@ services:
     ports:
       - 1389:1389
     environment:
+      LDAP_ROOT: ${LDAP_ROOT:-dc=openmrs,dc=org}
       LDAP_ADMIN_USERNAME: ${LDAP_ADMIN_USERNAME:-admin}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-Admin123}
       LDAP_CONFIG_ADMIN_ENABLED: ${LDAP_CONFIG_ADMIN_ENABLED:-yes}
       LDAP_CONFIG_ADMIN_USERNAME: ${LDAP_CONFIG_ADMIN_USERNAME:-configadmin}
       LDAP_CONFIG_ADMIN_PASSWORD: ${LDAP_CONFIG_ADMIN_PASSWORD:-Configadmin123}
       LDAP_ALLOW_ANON_BINDING: 'no'
+    networks:
+      - ldap-stg
     healthcheck:
       test: ldapsearch -H 'ldap://127.0.0.1:1389' >/dev/null; if [[ $$? == 53 ]]; then echo 0; else echo 1; fi
     volumes:
@@ -32,6 +40,8 @@ services:
     environment:
       - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
       - SCHEDULE=0 0 * * *
+    networks:
+      - ldap-stg
     restart: always
     healthcheck:
       test: "exit 0"

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 services:
   db:
@@ -49,3 +49,7 @@ volumes:
   postgres_data:
     driver: local
 
+networks:
+  default:
+    name: ldap-stg
+    external: true
