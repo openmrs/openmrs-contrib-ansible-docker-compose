@@ -1,52 +1,38 @@
 ---
-version: '3.5'
-
-networks:
-  ldap-stg:
-    name: ldap-stg
-    driver: bridge
+version: '3'
 
 services:
   openldap:
     restart: "always"
-    image: bitnami/openldap:2.6.6
+    image: osixia/openldap:1.5.0
+    container_name: openldap       # used by letsencrypt hook
+    command: "--copy-service"
     ports:
-      - 1389:1389
+      - 3389:389
+      - 636:636
     environment:
-      LDAP_ROOT: ${LDAP_ROOT:-dc=openmrs,dc=org}
-      LDAP_ADMIN_USERNAME: ${LDAP_ADMIN_USERNAME:-admin}
-      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-Admin123}
-      LDAP_CONFIG_ADMIN_ENABLED: ${LDAP_CONFIG_ADMIN_ENABLED:-yes}
-      LDAP_CONFIG_ADMIN_USERNAME: ${LDAP_CONFIG_ADMIN_USERNAME:-configadmin}
-      LDAP_CONFIG_ADMIN_PASSWORD: ${LDAP_CONFIG_ADMIN_PASSWORD:-Configadmin123}
-      LDAP_ALLOW_ANON_BINDING: 'no'
-      LDAP_CUSTOM_LDIF_DIR: '/ldifs'
-    networks:
-      - ldap-stg
-    healthcheck:
-      test: ldapsearch -H 'ldap://127.0.0.1:1389' >/dev/null; if [[ $$? == 53 ]]; then echo 0; else echo 1; fi
-    volumes:
-      - database-ldap:/bitnami/openldap/data
-      - config-ldap:/bitnami/openldap/slapd.d
-      - ./bootstrap:/ldifs
-
-  backup:
-    image: openmrsinfra/cron-backup:latest
-    depends_on:
-      - openldap
-    volumes:
-      - config-ldap:/ldap_config_data
-      - database-ldap:/ldap_database_data
-      - /opt/backups:/backup
-    environment:
-      - DIRS=/ldap_config_data:ldap_config,/ldap_database_data:ldap_database
-      - SCHEDULE=0 0 * * *
-    networks:
-      - ldap-stg
-    restart: always
+      LDAP_ORGANISATION: OpenMRS
+      LDAP_DOMAIN: openmrs.org
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
+      LDAP_TLS: ${LDAP_TLS:-true}
+      LDAP_TLS_CRT_FILENAME: cert.pem
+      LDAP_TLS_KEY_FILENAME: privkey.pem
+      LDAP_TLS_CA_CRT_FILENAME: fullchain.pem
+      LDAP_TLS_VERIFY_CLIENT: never
+      LDAP_LOG_LEVEL: 0
     healthcheck:
       test: "exit 0"
+    volumes:
+      - config-ldap:/etc/ldap/slapd.d
+      - database-ldap:/var/lib/ldap
+      - /etc/letsencrypt/live/gode.openmrs.org/:/container/service/slapd/assets/certs/
+      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+
+      # Only adds test data locally
+      - ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
+      - ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
 
 volumes:
-  database-ldap:
   config-ldap:
+  database-ldap:
