@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.5'
 
 services:
   openldap:
@@ -26,7 +26,7 @@ services:
     volumes:
       - config-ldap:/etc/ldap/slapd.d
       - database-ldap:/var/lib/ldap
-      - /etc/letsencrypt/live/gode.openmrs.org/:/container/service/slapd/assets/certs/
+      - /etc/letsencrypt/live/gode.openmrs.org:/container/service/slapd/assets/certs
       - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
 
       # Only adds test data locally
@@ -36,3 +36,8 @@ services:
 volumes:
   config-ldap:
   database-ldap:
+
+networks:
+  ldap-stg:
+    name: ldap-stg
+    driver: bridge
