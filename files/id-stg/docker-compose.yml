@@ -36,7 +36,7 @@ services:
     ports:
       - "587:25"
     environment:
-      - POSTFIX_HOSTNAME=${POSTFIX_HOSTNAME:-id-stg.openmrs.org}
+      - POSTFIX_HOSTNAME=${POSTFIX_HOSTNAME:-smtp-stg.openmrs.org}
       - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
       - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
       - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-Smtpd123}
