@@ -56,8 +56,3 @@ services:
 volumes:
   postgres_data:
     driver: local
-
-networks:
-  default:
-    name: ldap-stg
-    external: true
