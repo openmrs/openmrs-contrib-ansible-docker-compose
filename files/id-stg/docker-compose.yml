@@ -53,6 +53,7 @@ services:
       - "host.docker.internal:host-gateway" # Make LDAP on host available to postfix
     volumes:
       - /etc/letsencrypt/live/gode.openmrs.org:/etc/ssl/certs/
+      - /etc/letsencrypt/archive/gode.openmrs.org:/etc/archive/gode.openmrs.org
 volumes:
   postgres_data:
     driver: local
