@@ -29,8 +29,8 @@ services:
     restart: "always"
     ports:
       - "8080:8080"
-    extra_hosts:
-      - "host.docker.internal:host-gateway" # Make LDAP on host available to keycloak
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
   postfix:
     image: openmrsinfra/openmrs-id-postfix:nightly
     ports:
@@ -49,8 +49,6 @@ services:
       - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-Ldap123}
       - LDAP_HOST=${LDAP_HOST:-host.docker.internal}
       - LDAP_PORT=${LDAP_PORT:-389}
-    extra_hosts:
-      - "host.docker.internal:host-gateway" # Make LDAP on host available to postfix
     volumes:
       - /etc/letsencrypt/live/gode.openmrs.org:/etc/ssl/certs/
       - /etc/letsencrypt/archive/gode.openmrs.org:/etc/archive/gode.openmrs.org
