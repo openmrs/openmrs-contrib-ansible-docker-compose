@@ -17,7 +17,7 @@ services:
     depends_on:
       - db
     environment:
-      - KC_HOSTNAME=${KC_HOSTNAME:-localhost}
+      - KC_HOSTNAME=${KC_HOSTNAME:-sso-stg.openmrs.org}
       - KC_DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
       - KC_DB_USERNAME=${POSTGRES_USER:-postgres}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD:-Postgres123}
