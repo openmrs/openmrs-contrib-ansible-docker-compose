@@ -37,7 +37,7 @@ services:
       - "587:25"
       - "25:25"
     environment:
-      - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-id-stg.openmrs.org}
+      - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-smtp-stg.openmrs.org}
       - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-openmrs.org}
       - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
       - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
