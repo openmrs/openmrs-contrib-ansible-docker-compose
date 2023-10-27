@@ -35,8 +35,10 @@ services:
     image: openmrsinfra/openmrs-id-postfix:nightly
     ports:
       - "587:25"
+      - "25:25"
     environment:
-      - POSTFIX_HOSTNAME=${POSTFIX_HOSTNAME:-smtp-stg.openmrs.org}
+      - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-id-stg.openmrs.org}
+      - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-openmrs.org}
       - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
       - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
       - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-Smtpd123}
@@ -47,8 +49,8 @@ services:
       - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-Smtp123}
       - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-Ldap123}
-      - LDAP_HOST=${LDAP_HOST:-host.docker.internal}
-      - LDAP_PORT=${LDAP_PORT:-389}
+      - LDAP_HOST=${LDAP_HOST:-ldap-stg.openmrs.org}
+      - LDAP_PORT=${LDAP_PORT:-636}
     volumes:
       - /etc/letsencrypt/live/gode.openmrs.org:/etc/ssl/certs/
       - /etc/letsencrypt/archive/gode.openmrs.org:/etc/archive/gode.openmrs.org
