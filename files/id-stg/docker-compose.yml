@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
   keycloak:
-    image: openmrsinfra/openmrs-id-keycloak:nightly
+    image: openmrsinfra/openmrs-id-keycloak:staging
     depends_on:
       - db
     environment:
@@ -32,7 +32,7 @@ services:
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
   postfix:
-    image: openmrsinfra/openmrs-id-postfix:nightly
+    image: openmrsinfra/openmrs-id-postfix:staging
     ports:
       - "587:25"
       - "25:25"
@@ -42,9 +42,7 @@ services:
       - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
       - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
       - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-Smtpd123}
-      - POSTFIX_TLS_CRT_FILENAME=${POSTFIX_SSL_CERT:-fullchain.pem}
-      - POSTFIX_TLS_KEY_FILENAME=${POSTFIX_SSL_CERT_KEY:-privkey.pem}
-      - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.mandrillapp.com}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-Smtp123}
