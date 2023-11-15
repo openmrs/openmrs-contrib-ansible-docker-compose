@@ -1,0 +1,58 @@
+version: '3.5'
+
+services:
+  db:
+    image: postgres:16.0-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Postgres123}
+    healthcheck:
+      test: "pg_isready -U postgres"
+    restart: "always"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  keycloak:
+    image: openmrsinfra/openmrs-id-keycloak:production
+    depends_on:
+      - db
+    environment:
+      - KC_HOSTNAME=${KC_HOSTNAME:-id-new.openmrs.org}
+      - KC_DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - KC_DB_USERNAME=${POSTGRES_USER:-postgres}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD:-Postgres123}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
+      - KC_PROXY=${KC_PROXY:-edge}
+    healthcheck:
+      test: curl --head -fsS http://localhost:8080/health/live || exit 1
+    restart: "always"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+  postfix:
+    image: openmrsinfra/openmrs-id-postfix:production
+    ports:
+      - "587:25"
+      - "25:25"
+    environment:
+      - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-smtp.openmrs.org}
+      - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-id.openmrs.org}
+      - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
+      - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
+      - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-Smtpd123}
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.mandrillapp.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-Smtp123}
+      - LDAP_HOST=${LDAP_HOST:-ldaps://ldap.openmrs.org}
+      - LDAP_PORT=${LDAP_PORT:-636}
+      - LDAP_USER=${LDAP_USER:-ldap}
+      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-Ldap123}
+    volumes:
+      - /etc/letsencrypt/live/adaba.openmrs.org:/etc/ssl/certs/
+      - /etc/letsencrypt/archive/adaba.openmrs.org:/etc/archive/adaba.openmrs.org
+volumes:
+  postgres_data:
+    driver: local
