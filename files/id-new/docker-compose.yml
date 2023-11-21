@@ -39,7 +39,11 @@ services:
     environment:
       - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-smtp.openmrs.org}
       - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-id.openmrs.org}
-      - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-172.17.0.0/24}
+      - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-}
+      - POSTFIX_USERNAME=${POSTFIX_USERNAME:-username}
+      - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-password}
+      - POSTFIX_TLS_CRT_FILENAME=${POSTFIX_SSL_CERT:-fullchain.pem}
+      - POSTFIX_TLS_KEY_FILENAME=${POSTFIX_SSL_CERT_KEY:-privkey.pem}
       - SMTP_SERVER=${SMTP_SERVER:-smtp.mandrillapp.com}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
