@@ -20,7 +20,7 @@ services:
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
-      SPA_CONFIG_URLS:
+      SPA_CONFIG_URLS: config-core_demo.json
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
       timeout: 5s
@@ -50,7 +50,12 @@ services:
   db:
     image: mariadb:10.8.2
     restart: "unless-stopped"
-    command: "mysqld --character-set-server=utf8 --collation-server=utf8_general_ci"
+    command:
+      - mysqld
+      - --character-set-server=utf8 
+      - --collation-server=utf8_general_ci
+      - --optimizer-search-depth=0 # makes queries with many JOINs not over-optimized, see:
+                                   # https://mariadb.com/docs/server/ref/mdb/system-variables/optimizer_search_depth/
     environment:
       MYSQL_DATABASE: ${OPENMRS_DB:-openmrs}
       MYSQL_USER: ${OPENMRS_DB_USER:-openmrs}
