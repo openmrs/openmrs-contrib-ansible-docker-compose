@@ -39,6 +39,7 @@ services:
       OMRS_CONFIG_CONNECTION_DATABASE: ${OPENMRS_DB:-openmrs}
       OMRS_CONFIG_CONNECTION_USERNAME: ${OPENMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
+      OMRS_ADMIN_PASSWORD_LOCKED: "true"
     healthcheck:
       test: ["CMD", "curl", "-fsSL", "http://localhost:8080/openmrs"]
       timeout: 5s
