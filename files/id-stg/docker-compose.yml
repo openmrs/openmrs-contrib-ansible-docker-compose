@@ -24,6 +24,7 @@ services:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
       - KC_PROXY=${KC_PROXY:-edge}
+      - KC_METRICS_ENABLED=${KC_METRICS_ENABLED:-false}
     healthcheck:
       test: curl --head -fsS http://localhost:8080/health/live || exit 1
     restart: "always"
