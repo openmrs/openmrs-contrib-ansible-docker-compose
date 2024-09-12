@@ -34,8 +34,8 @@ services:
     healthcheck:
       test: "exit 0"
     volumes:
-      - '/etc/letsencrypt-bk/live/gode.openmrs.org:/opt/bitnami/openldap/certs'
-      - '/etc/letsencrypt-bk/archive/gode.openmrs.org:/opt/bitnami/archive/gode.openmrs.org'
+      - '/etc/letsencrypt/live/gode.openmrs.org:/opt/bitnami/openldap/certs'
+      - '/etc/letsencrypt/archive/gode.openmrs.org:/opt/bitnami/archive/gode.openmrs.org'
       - openldap:/bitnami/openldap
       - './ldifs:/ldifs'
       - './schemas/ppolicy.ldif:/opt/bitnami/openldap/etc/schema/ppolicy.ldif'
