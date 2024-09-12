@@ -1,37 +1,45 @@
 ---
-version: '3.5'
+version: '3.8'
+
+volumes:
+  openldap:
+    driver: local
 
 services:
   openldap:
     restart: "always"
-    image: osixia/openldap:1.5.0
-    command: "--copy-service"
+    image: bitnami/openldap:2.5.18
+    hostname: ldap-stg.openmrs.org
     ports:
       - 636:636
     environment:
-      LDAP_ORGANISATION: OpenMRS
-      LDAP_DOMAIN: openmrs.org
-      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-admin}
-      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-config}
-      LDAP_TLS: ${LDAP_TLS:-true}
-      LDAP_TLS_CRT_FILENAME: cert.pem
-      LDAP_TLS_KEY_FILENAME: privkey.pem
-      LDAP_TLS_CA_CRT_FILENAME: fullchain.pem
-      LDAP_TLS_VERIFY_CLIENT: never
-      LDAP_LOG_LEVEL: 0
+      - LDAP_ROOT=dc=openmrs,dc=org
+      - LDAP_ADMIN_DN=cn=admin,dc=openmrs,dc=org
+      - LDAP_TLS_VERIFY_CLIENT=never
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=${LDAP_ADMIN_PASSWORD:-admin}
+      - LDAP_CONFIG_ADMIN_ENABLED=yes
+      - LDAP_CONFIG_ADMIN_USERNAME=admin
+      - LDAP_CONFIG_ADMIN_PASSWORD=${LDAP_CONFIG_PASSWORD:-config}
+      - LDAP_LDAPS_PORT_NUMBER=636
+      - LDAP_PORT_NUMBER=389
+      - LDAP_ENABLE_TLS=yes
+      - LDAP_TLS_CERT_FILE=/opt/bitnami/openldap/certs/cert.pem
+      - LDAP_TLS_KEY_FILE=/opt/bitnami/openldap/certs/privkey.pem
+      - LDAP_TLS_CA_FILE=/opt/bitnami/openldap/certs/fullchain.pem
+      - LDAP_ADD_SCHEMAS=yes
+      - LDAP_EXTRA_SCHEMAS=cosine,inetorgperson,nis,ppolicy
+      - LDAP_CUSTOM_LDIF_DIR=/ldifs
+      - LDAP_LOGLEVEL=-1
     healthcheck:
       test: "exit 0"
     volumes:
-      - config-ldap:/etc/ldap/slapd.d
-      - database-ldap:/var/lib/ldap
-      - /etc/letsencrypt/live/gode.openmrs.org:/container/service/slapd/assets/certs
-      - /etc/letsencrypt/archive/gode.openmrs.org:/container/service/slapd/archive/gode.openmrs.org
-      - ./bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - '/etc/letsencrypt-bk/live/gode.openmrs.org:/opt/bitnami/openldap/certs'
+      - '/etc/letsencrypt-bk/archive/gode.openmrs.org:/opt/bitnami/archive/gode.openmrs.org'
+      - openldap:/bitnami/openldap
+      - './ldifs:/ldifs'
+      - './schemas/ppolicy.ldif:/opt/bitnami/openldap/etc/schema/ppolicy.ldif'
 
       # Only adds test data locally
       #- ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
       #- ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
-
-volumes:
-  config-ldap:
-  database-ldap:
