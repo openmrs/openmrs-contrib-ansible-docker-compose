@@ -68,38 +68,3 @@ objectClass: simpleSecurityObject
 description: Crowd system account
 uid: crowd
 userPassword:: e1NTSEF9R1JVTndLektjQUx5WUR2ZFd6bmI1SGFqaXZRbEhMVGs=
-
-dn: uid=testadmin,ou=users,dc=openmrs,dc=org
-uid: testadmin
-userPassword:: e1NTSEF9UklObmRDblpCb2lSdWxsQlV6MVJ6b2swTWVMeWIzTlU=
-cn: Admin
-sn: User
-displayName: Test Admin User
-mail: testadminuser@gmail.com
-objectClass: inetOrgPerson
-objectClass: extensibleObject
-
-dn: uid=test,ou=users,dc=openmrs,dc=org
-uid: test
-userPassword:: e1NTSEF9MURYUEJVNWZGd2ZmaURidTJyaVcrRTFGOGMzNjVOajQ=
-cn: Test
-sn: User
-displayName: Test User
-mail: testuser@gmail.com
-objectClass: inetOrgPerson
-objectClass: extensibleObject
-
-dn: cn=atlas-administrators,ou=groups,dc=openmrs,dc=org
-description: Atlas administrators
-objectClass: groupOfNames
-cn: atlas-admin
-cn: atlas-administrators
-member:
-member: uid=testadmin,ou=users,dc=openmrs,dc=org
-
-dn: cn=atlas-users,ou=groups,dc=openmrs,dc=org
-description: Atlas Users
-objectClass: groupOfNames
-cn: atlas-users
-member:
-member: uid=test,ou=users,dc=openmrs,dc=org
