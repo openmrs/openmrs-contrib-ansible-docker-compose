@@ -23,7 +23,7 @@ services:
       - LDAP_CONFIG_ADMIN_PASSWORD=${LDAP_CONFIG_PASSWORD:-config}
       - LDAP_LDAPS_PORT_NUMBER=636
       - LDAP_PORT_NUMBER=389
-      - LDAP_ENABLE_TLS=yes
+      - LDAP_ENABLE_TLS=${LDAP_ENABLE_TLS:-yes}
       - LDAP_TLS_CERT_FILE=/opt/bitnami/openldap/certs/cert.pem
       - LDAP_TLS_KEY_FILE=/opt/bitnami/openldap/certs/privkey.pem
       - LDAP_TLS_CA_FILE=/opt/bitnami/openldap/certs/fullchain.pem
