@@ -34,14 +34,6 @@ ldapwhoami -D "uid=testadmin,ou=users,dc=openmrs,dc=org" -W
 >>> testadmin
 
 ```
-
-If connecting from your local machine:
-
-```
-ldapsearch -LLL -D "cn=admin,cn=config" -W -h 127.0.0.1 -p 3389 -b "cn=config"
-```
-
-```
 # delete containers and volumes
 $ docker-compose down -v
 ```
