@@ -32,11 +32,11 @@ services:
       - LDAP_CUSTOM_LDIF_DIR=/ldifs
       - LDAP_LOGLEVEL=-1
     healthcheck:
-      test: "exit 0"
+      test: "ldapsearch -H ldap://localhost -D 'cn=admin,dc=openmrs,dc=org' -w $$LDAP_ADMIN_PASSWORD -b 'ou=system,dc=openmrs,dc=org' || exit 1"
     volumes:
-      - '/etc/letsencrypt/live/gode.openmrs.org/cert.pem:/opt/bitnami/openldap/certs/cert.pem'
-      - '/etc/letsencrypt/live/gode.openmrs.org/privkey.pem:/opt/bitnami/openldap/certs/privkey.pem'
-      - '/etc/letsencrypt/live/gode.openmrs.org/fullchain.pem:/opt/bitnami/openldap/certs/fullchain.pem'
+      - '/etc/letsencrypt/live/${LDAP_HOSTNAME-}.openmrs.org/cert.pem:/opt/bitnami/openldap/certs/cert.pem'
+      - '/etc/letsencrypt/live/${LDAP_HOSTNAME-}.openmrs.org/privkey.pem:/opt/bitnami/openldap/certs/privkey.pem'
+      - '/etc/letsencrypt/live/${LDAP_HOSTNAME-}.openmrs.org/fullchain.pem:/opt/bitnami/openldap/certs/fullchain.pem'
       - openldap:/bitnami/openldap
       - './ldifs:/ldifs'
       - './schemas/ppolicy.ldif:/opt/bitnami/openldap/etc/schema/ppolicy.ldif'
@@ -44,3 +44,17 @@ services:
       # Only adds test data locally
       #- ./test-data/70-test-users.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}70-test-users.ldif
       #- ./test-data/80-test-groups.ldif:${TEST_DATA_DIR-/container/service/slapd/assets/config/bootstrap/ldif/custom/}80-test-groups.ldif
+
+  backup:
+    image: openmrsinfra/cron-backup:latest
+    depends_on:
+      - openldap
+    volumes:
+      - openldap:/ldap_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/ldap_data:ldap_data
+      - SCHEDULE=0 0 * * *
+    restart: always
+    healthcheck:
+      test: "exit 0"

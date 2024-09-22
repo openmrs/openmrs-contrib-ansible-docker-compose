@@ -13,13 +13,24 @@ This is a custom role.
   - `docker-compose up` to start it, and `docker-compose down` to power it off.
   Follow more details on the README file.  
 
+
+## Editing encrypted files
+
+You may find `.env` encrypted files in this repository. An `env.template` file should display the environment variables available. 
+
+
+To edit the .env file
+```
+ansible-vault edit --vault-password-file /local/path/to/ansible-repo/.vault_pass .env
+```
+
 ## Deploying a new docker-compose application to our infrastructure
   
 ### Process   
   - Create a branch/fork of this repository. 
   - Create a subfolder in <https://github.com/openmrs/openmrs-contrib-ansible-docker-compose/tree/master/files>
   for your application. All files required by your application, including `docker-compose.yaml` file will live there. 
-  - Create a pull request and notify the infrastructure team (telegram or talk). 
+  - Create a pull request and notify the infrastructure team. 
   Let us know which DNS name you'd like to use. 
   Let us know if you prefer to have newer images deployed automatically from a Bamboo build or when pushed to dockerhub. 
   - Infrastructure team will merge the pull request, add passwords and secrets, configure 

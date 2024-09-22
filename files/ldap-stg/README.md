@@ -13,6 +13,7 @@ By default, it will try to use SSL/letsencrypt certs. Disable it locally by expo
 
 ```
 # Bring containers up
+$ export LDAP_ENABLE_TLS=no
 $ docker-compose up -d
 ```
 
