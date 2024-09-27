@@ -7,6 +7,12 @@ FORCE_DESTROY_VOLUMES=${2:-false}
 FORCE_RESTART=${3:-false}
 SERVICE=${4:-''}
 
+DOCKER_COMPOSE="docker-compose"
+result=$(command -pv docker-compose 2>&1 1>/dev/null && echo 0 || echo 1)
+if [ "$result" -ne "0" ]; then
+  DOCKER_COMPOSE="docker compose"
+fi
+
 cd /root/docker/$ENVIRONMENT
 
 echo "Removing unused images if any"
@@ -15,7 +21,7 @@ if [ "${EXITED_IMAGES}" != "" ]; then
   docker rm ${EXITED_IMAGES}
 fi
 
-docker-compose pull ${SERVICE}
+eval "${DOCKER_COMPOSE} pull ${SERVICE}"
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
@@ -37,15 +43,15 @@ if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DEST
     echo "Forcing restarts"
     compose_params="--force-recreate"
   fi
-  docker-compose up -d --no-build --remove-orphans ${compose_params} ${SERVICE}
+  eval "${DOCKER_COMPOSE} up -d --no-build --remove-orphans ${compose_params} ${SERVICE}"
 else
   echo "Recreating all images and volumes"
-  docker-compose down -v
+  eval "${DOCKER_COMPOSE} down -v"
   if [[ -n "${RESTORE_BACKUP}" ]]; then
     echo "Restoring backup ${RESTORE_BACKUP}"
-    docker-compose run --rm backup bash restore.sh "${RESTORE_BACKUP}"
+    eval "${DOCKER_COMPOSE} run --rm backup bash restore.sh \"${RESTORE_BACKUP}\""
   fi
-  docker-compose up -d --no-build ${SERVICE}
+  eval "${DOCKER_COMPOSE} up -d --no-build ${SERVICE}"
 fi
 
 containers=$(docker-compose ps -q)
@@ -62,6 +68,6 @@ do
 done
 
 echo "####################################################"
-docker-compose logs
+eval "${DOCKER_COMPOSE} logs"
 
 exit 1
