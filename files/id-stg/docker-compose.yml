@@ -37,6 +37,9 @@ services:
     ports:
       - "587:25"
       - "25:25"
+    healthcheck:
+      test: postfix status
+    restart: "always"
     environment:
       - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-smtp-stg.openmrs.org}
       - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-id-stg.openmrs.org}
