@@ -4,10 +4,8 @@ Details can be found [openmrs-contrib-itsm-id](https://github.com/openmrs/openmr
 
 When this instance starts from an empty container, `realm-export.json` will be imported as `openmrs` realm. It can be accessed in `https://id-stg.openmrs.org` . This realm file is only imported if the realm doesn't already exist ([docs](https://www.keycloak.org/server/importExport#_importing_a_realm_during_startup))
 
-
-The exported realm does _not_ connect to Atlassian via SAML, as this is the staging environment. If that's needed, check the [docs](https://github.com/openmrs/openmrs-contrib-itsm-id/tree/main?tab=readme-ov-file#connecting-to-atlassian)
-
 We are currently not doing backups on postgres, as most of the configurations can be loaded from the exported configuration file. 
 
 Master domain can be access with username and password defined in `.env` file. It can accessed via `https://id-stg.openmrs.org/admin` . This is how one can apply changes to Keycloak. 
 
+Exported realms do _not_ have Atlassian client configured (via SAML). If that's needed on any environment, check the [docs](https://github.com/openmrs/openmrs-contrib-itsm-id/tree/main?tab=readme-ov-file#connecting-to-atlassian) to configure after startup. 
