@@ -53,7 +53,7 @@ objectClass: account
 objectClass: simpleSecurityObject
 description: OpenMRS ID system account
 uid: omrsid
-userPassword:: e1NTSEF9QUJoV3NsV3JjZU5iYVplNXhIVStBRHZjRGhacTN4SXc=
+userPassword:: e1NTSEF9bE1oQjlzYnduMURsMTdUdk1oT3l6Sys3OWd3Yy9BZUI=
 
 dn: uid=atlas,ou=system,dc=openmrs,dc=org
 objectClass: account
