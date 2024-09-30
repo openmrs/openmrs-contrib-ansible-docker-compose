@@ -1,7 +1,6 @@
 networks:
   ozone:
   web:
-    external: true
 
 services:
   mysql:
