@@ -10,8 +10,8 @@ services:
     restart: "always"
     image: bitnami/openldap:2.5.18
     hostname: ldap.openmrs.org
-    # ports:
-    #   - 636:636
+    ports:
+      - 636:636
     environment:
       - LDAP_ROOT=dc=openmrs,dc=org
       - LDAP_ADMIN_DN=cn=admin,dc=openmrs,dc=org

@@ -7,8 +7,8 @@ services:
     image: osixia/openldap:1.2.4
     container_name: openldap       # used by letsencrypt hook
     command: "--copy-service"
-    ports:
-      - 636:636
+    # ports:
+    #   - 636:636
     environment:
       LDAP_ORGANISATION: OpenMRS
       LDAP_DOMAIN: ${LDAP_DOMAIN:-openmrs.org}
