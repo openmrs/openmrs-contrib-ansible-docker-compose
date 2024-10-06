@@ -1,0 +1,15 @@
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: to * 
+  by self write 
+  by dn="cn=admin,dc=openmrs,dc=org" write 
+  by dn.base="uid=omrsid,ou=system,dc=openmrs,dc=org" write
+  by dn.base="uid=atlas,ou=system,dc=openmrs,dc=org" read 
+  by anonymous auth 
+  by * none
+-
+add: olcAccess
+olcAccess: to attrs=pwdPolicySubentry 
+  by dn.base="uid=omrsid,ou=system,dc=openmrs,dc=org" write 
+  by * none

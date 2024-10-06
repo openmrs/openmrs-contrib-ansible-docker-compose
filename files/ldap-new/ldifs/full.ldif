@@ -61,10 +61,3 @@ objectClass: simpleSecurityObject
 description: Atlas system account
 uid: atlas
 userPassword:: e1NTSEF9ZEw2QVBlV21WczF6TmtCbDNxcGlYZTd4Z1BZR09RbHQ=
-
-dn: uid=crowd,ou=system,dc=openmrs,dc=org
-objectClass: account
-objectClass: simpleSecurityObject
-description: Crowd system account
-uid: crowd
-userPassword:: e1NTSEF9R1JVTndLektjQUx5WUR2ZFd6bmI1SGFqaXZRbEhMVGs=

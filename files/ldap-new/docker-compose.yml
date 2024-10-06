@@ -28,7 +28,7 @@ services:
       - LDAP_TLS_KEY_FILE=/opt/bitnami/openldap/certs/privkey.pem
       - LDAP_TLS_CA_FILE=/opt/bitnami/openldap/certs/fullchain.pem
       - LDAP_ADD_SCHEMAS=yes
-      - LDAP_EXTRA_SCHEMAS=cosine,inetorgperson,nis,ppolicy
+      - LDAP_EXTRA_SCHEMAS=cosine,inetorgperson,nis,ppolicy,writepermissions
       - LDAP_CUSTOM_LDIF_DIR=/ldifs
       - LDAP_LOGLEVEL=0
     healthcheck:
@@ -40,6 +40,7 @@ services:
       - openldap:/bitnami/openldap
       - './ldifs:/ldifs'
       - './schemas/ppolicy.ldif:/opt/bitnami/openldap/etc/schema/ppolicy.ldif'
+      - './schemas/writepermissions.ldif:/opt/bitnami/openldap/etc/schema/writepermissions.ldif'
 
   backup:
     image: openmrsinfra/cron-backup:latest

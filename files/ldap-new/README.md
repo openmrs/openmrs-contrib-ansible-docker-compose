@@ -30,11 +30,8 @@ ldapwhoami -D "uid=testadmin,ou=users,dc=openmrs,dc=org" -W
 
 ```
 
-If connecting from your local machine:
+After importing the files into production, make sure to update the password for atlas and omrsid system users. 
 
-```
-ldapsearch -LLL -D "cn=admin,cn=config" -W -h 127.0.0.1 -p 3389 -b "cn=config"
-```
 
 ```
 # delete containers and volumes
