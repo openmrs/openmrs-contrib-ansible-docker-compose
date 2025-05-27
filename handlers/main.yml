@@ -1,7 +1,6 @@
 ---
-
-  - name: restart docker compose
-    shell: /usr/local/bin/deploy-compose {{ item.item }}
-    when: item.changed
-    with_items: "{{ docker_compose_projects.results }}"
+- name: restart docker compose
+  ansible.builtin.shell: /usr/local/bin/deploy-compose {{ item.item }}
+  when: item.changed
+  loop: "{{ docker_compose_projects.results }}"
 
