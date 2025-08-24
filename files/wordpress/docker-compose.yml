@@ -3,7 +3,8 @@ version: '3.1'
 services:
 
   wordpress:
-    image: wordpress:6.0.1
+    # using latest as wordpress is configured to automatically upgrade
+    image: wordpress:latest
     restart: always
     depends_on:
       - mysql
