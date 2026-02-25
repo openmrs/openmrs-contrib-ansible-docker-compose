@@ -118,4 +118,3 @@ volumes:
   loki-config: ~
   alloy-config: ~
   grafana-provisioning: ~
-
