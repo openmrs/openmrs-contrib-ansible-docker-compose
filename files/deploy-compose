@@ -7,11 +7,11 @@ FORCE_DESTROY_VOLUMES=${2:-false}
 FORCE_RESTART=${3:-false}
 SERVICE=${4:-''}
 
-# Check if using old or new docker compose 
+# Check if using old or new docker compose
 if command -v docker-compose >/dev/null 2>&1; then
-    DOCKER_COMPOSE="docker-compose"
+    DOCKER_COMPOSE=(docker-compose)
 else
-    DOCKER_COMPOSE="docker compose"
+    DOCKER_COMPOSE=(docker compose)
 fi
 
 cd /root/docker/$ENVIRONMENT
@@ -22,7 +22,7 @@ if [ "${EXITED_IMAGES}" != "" ]; then
   docker rm ${EXITED_IMAGES}
 fi
 
-eval "${DOCKER_COMPOSE} pull ${SERVICE}"
+"${DOCKER_COMPOSE[@]}" pull ${SERVICE}
 
 [ -s ./deploy.env ] && source ./deploy.env
 DESTROY_VOLUMES=${DESTROY_VOLUMES:-true}
@@ -35,7 +35,7 @@ if [[ -n "${BACKUP_URLS}" ]]; then
     wget -N -P "${BACKUP_DIR}" "${i}"
   done
 fi
-   
+
 if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DESTROY_VOLUMES}" == "false" ]]; then
   echo "Keeping volumes"
 
@@ -44,31 +44,53 @@ if [[ -z "${RESTORE_BACKUP}" && "${FORCE_DESTROY_VOLUMES}" == "false" && "${DEST
     echo "Forcing restarts"
     compose_params="--force-recreate"
   fi
-  eval "${DOCKER_COMPOSE} up -d --no-build --remove-orphans ${compose_params} ${SERVICE}"
+  "${DOCKER_COMPOSE[@]}" up -d --no-build --remove-orphans ${compose_params} ${SERVICE}
 else
   echo "Recreating all images and volumes"
-  eval "${DOCKER_COMPOSE} down -v"
+  "${DOCKER_COMPOSE[@]}" down -v
   if [[ -n "${RESTORE_BACKUP}" ]]; then
     echo "Restoring backup ${RESTORE_BACKUP}"
-    eval "${DOCKER_COMPOSE} run --rm backup bash restore.sh \"${RESTORE_BACKUP}\""
+    "${DOCKER_COMPOSE[@]}" run --rm backup bash restore.sh "${RESTORE_BACKUP}"
   fi
-  eval "${DOCKER_COMPOSE} up -d --no-build ${SERVICE}"
+  "${DOCKER_COMPOSE[@]}" up -d --no-build ${SERVICE}
 fi
 
-containers=$(eval "${DOCKER_COMPOSE} ps -q")
+HEALTH_CHECK_ENABLED=${HEALTH_CHECK_ENABLED:-true}
+HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:-300}
+
+if [[ "${HEALTH_CHECK_ENABLED}" != "true" ]]; then
+  echo "Health check disabled, skipping"
+  exit 0
+fi
+
+all_containers=$("${DOCKER_COMPOSE[@]}" ps -q)
+containers=""
+for c in $all_containers; do
+  if docker inspect --format='{{if .State.Health}}{{.ID}}{{end}}' "$c" | grep -q .; then
+    containers="${containers} ${c}"
+  fi
+done
+containers=${containers# }
+
+if [[ -z "${containers}" ]]; then
+  echo "No containers with health checks defined, skipping"
+  exit 0
+fi
+
+max_iterations=$(( HEALTH_CHECK_TIMEOUT / 15 ))
 n=0
-until [ $n -ge 20 ]
+until [ $n -ge $max_iterations ]
 do
   echo "Verifying if docker containers ${containers} are healthy"
   health_check=$(docker inspect --format='{{json .State.Health.Status}}' $containers | sort -u )
   echo "Status found: "${health_check}
   test "${health_check}" = '"healthy"' && exit 0
   echo "Waiting 15s"
-  n=$[$n+1]
+  n=$(( n + 1 ))
   sleep 15
 done
 
 echo "####################################################"
-eval "${DOCKER_COMPOSE} logs"
+"${DOCKER_COMPOSE[@]}" logs
 
 exit 1

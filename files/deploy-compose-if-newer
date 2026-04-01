@@ -7,18 +7,18 @@ FORCE_RESTART=${4:-false}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Check if using old or new docker compose 
+# Check if using old or new docker compose
 if command -v docker-compose >/dev/null 2>&1; then
-    DOCKER_COMPOSE="docker-compose"
+    DOCKER_COMPOSE=(docker-compose)
 else
-    DOCKER_COMPOSE="docker compose"
+    DOCKER_COMPOSE=(docker compose)
 fi
 
 for ENVIRONMENT in $ENVIRONMENTS; do
   echo "Running environment $ENVIRONMENT"
   (
     cd /root/docker/$ENVIRONMENT
-    result_dc=$(eval "$DOCKER_COMPOSE pull")
+    result_dc=$("${DOCKER_COMPOSE[@]}" pull 2>&1)
 
     if echo "$result_dc" | fgrep "Status: Downloaded newer image for ${IMAGE}"; then
       echo "New image downloaded for ${IMAGE}"
