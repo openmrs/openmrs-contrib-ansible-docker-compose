@@ -103,3 +103,8 @@ services:
 volumes:
   openmrs-data: ~
   db-data: ~
+  grafana-data: ~
+  loki-data: ~
+  loki-config: ~
+  alloy-config: ~
+  grafana-provisioning: ~
