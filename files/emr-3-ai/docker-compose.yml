@@ -1,0 +1,105 @@
+version: "3.8"
+
+services:
+  gateway:
+    image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly}
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+
+  frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:${TAG:-nightly-chartsearch}
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_DEFAULT_LOCALE:
+
+  backend:
+    image: openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
+      OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health/started"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+      start_period: 900s
+    volumes:
+      - openmrs-data:/openmrs/data
+
+  db:
+    image: mariadb:10.11
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mariadb", "--user=${OMRS_DB_USER:-openmrs}", "--password=${OMRS_DB_PASSWORD:-openmrs}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: ${OMRS_DB_USER:-openmrs}
+      MYSQL_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
+    volumes:
+      - db-data:/var/lib/mysql
+
+    # Grafana monitoring stack
+  monitoring-init:
+    image: openmrs/openmrs-reference-application-3-monitoring-init:dev3
+    volumes:
+      - loki-data:/loki/data
+      - loki-config:/etc/loki
+      - alloy-config:/etc/alloy
+      - grafana-provisioning:/etc/grafana/provisioning
+
+  loki:
+    image: grafana/loki:3.6
+    volumes:
+      - loki-config:/etc/loki
+      - loki-data:/loki/data
+    command: -config.file=/etc/loki/local-config.yaml
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  alloy:
+    image: grafana/alloy:v1.13.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - alloy-config:/etc/alloy
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  grafana:
+    image: grafana/grafana:12.3
+    environment:
+      GF_LOG_LEVEL: warn
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-Admin123}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/json/logs-dashboard.json
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - grafana-provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_started
+      monitoring-init:
+        condition: service_completed_successfully
+
+volumes:
+  openmrs-data: ~
+  db-data: ~
