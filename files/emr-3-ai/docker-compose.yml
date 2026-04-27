@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   gateway:
-    image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly}
+    image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly-chartsearch}
     depends_on:
       - frontend
       - backend
