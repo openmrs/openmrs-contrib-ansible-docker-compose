@@ -21,3 +21,4 @@
   with_items:
     - "deploy-compose"
     - "deploy-compose-if-newer"
+  tags: ['scoped-deploy']
