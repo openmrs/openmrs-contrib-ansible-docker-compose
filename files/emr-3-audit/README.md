@@ -31,7 +31,8 @@ for anything missing when it starts. No extra configuration is needed here.
 
 ## Deployment notes
 
-- Gateway (web UI) is exposed on port **8090**.
+- Gateway (web UI) is exposed on port **8092** (8090 is taken by `emr-3-dev`).
+- Requested hostname: **audit3.openmrs.org**.
 - `deploy.env` sets `HEALTH_CHECK_TIMEOUT=3600`: the very first boot runs the
   liquibase install and demo-data generation with every write audited, which
   can take well over 30 minutes. Subsequent boots are fast.
