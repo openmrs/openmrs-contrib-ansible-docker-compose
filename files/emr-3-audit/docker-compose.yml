@@ -76,57 +76,6 @@ services:
     volumes:
       - db-data:/var/lib/mysql
 
-  # Grafana monitoring stack
-  monitoring-init:
-    image: openmrs/openmrs-reference-application-3-monitoring-init:dev3
-    volumes:
-      - loki-data:/loki/data
-      - loki-config:/etc/loki
-      - alloy-config:/etc/alloy
-      - grafana-provisioning:/etc/grafana/provisioning
-
-  loki:
-    image: grafana/loki:3.6
-    volumes:
-      - loki-config:/etc/loki
-      - loki-data:/loki/data
-    command: -config.file=/etc/loki/local-config.yaml
-    depends_on:
-      monitoring-init:
-        condition: service_completed_successfully
-
-  alloy:
-    image: grafana/alloy:v1.13.1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - alloy-config:/etc/alloy
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    depends_on:
-      monitoring-init:
-        condition: service_completed_successfully
-
-  grafana:
-    image: grafana/grafana:12.3
-    environment:
-      GF_LOG_LEVEL: warn
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-Admin123}
-      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/json/logs-dashboard.json
-      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
-      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
-    volumes:
-      - grafana-provisioning:/etc/grafana/provisioning
-      - grafana-data:/var/lib/grafana
-    depends_on:
-      loki:
-        condition: service_started
-      monitoring-init:
-        condition: service_completed_successfully
-
 volumes:
   openmrs-data: ~
   db-data: ~
-  grafana-data: ~
-  loki-data: ~
-  loki-config: ~
-  alloy-config: ~
-  grafana-provisioning: ~
