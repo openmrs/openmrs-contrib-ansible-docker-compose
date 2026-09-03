@@ -69,7 +69,7 @@ services:
       MYSQL_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
     healthcheck:
-      test: "mysql --user=${OPENMRS_DB_USER:-openmrs} --password=${OPENMRS_DB_PASSWORD:-openmrs} --execute \"SHOW DATABASES;\""
+      test: "mysql --user=${OPENMRS_DB_USER:-openmrs} --password=${OPENMRS_DB_PASSWORD:-Admin123} --execute \"SHOW DATABASES;\""
       interval: 3s
       timeout: 1s
       retries: 5
