@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   # Proxy
   gateway:
@@ -40,6 +38,13 @@ services:
       OMRS_CONFIG_CONNECTION_USERNAME: ${OPENMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
       OMRS_ADMIN_PASSWORD_LOCKED: ${OMRS_ADMIN_PASSWORD_LOCKED:-true}
+      OMRS_OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://alloy:4318}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-openmrs-backend}
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
       timeout: 5s
@@ -67,10 +72,14 @@ services:
   # Grafana monitoring stack
   monitoring-init:
     image: openmrs/openmrs-reference-application-3-monitoring-init:dev3
+    environment:
+      MONITORING_MODE: bundled
     volumes:
       - loki-data:/loki/data
       - loki-config:/etc/loki
       - alloy-config:/etc/alloy
+      - prometheus-config:/etc/prometheus
+      - blackbox-config:/config
       - grafana-provisioning:/etc/grafana/provisioning
 
   loki:
@@ -88,10 +97,61 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - alloy-config:/etc/alloy
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy
     depends_on:
       monitoring-init:
         condition: service_completed_successfully
+
+  prometheus:
+    image: prom/prometheus:v3.9.0
+    container_name: prometheus
+    command:
+      # normal Prometheus behaviour
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      # Alloy forwards OTLP metrics to Prometheus using the remote-write API.
+      - --web.enable-remote-write-receiver
+    volumes:
+      - prometheus-config:/etc/prometheus
+      - prometheus_data:/prometheus
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.28.0
+    container_name: blackbox
+    command: --config.file=/config/blackbox.yml --log.level=error --log.prober=error
+    volumes:
+      - blackbox-config:/config
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    privileged: true
+    command:
+      - --docker_only=true
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.service,com.docker.compose.project
+      - --enable_metrics=cpu,memory,network,disk,diskIO,oom_event
+      - --housekeeping_interval=15s
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # cAdvisor's docker factory needs containerd too, otherwise it falls back to
+      # raw cgroups and emits no container names or labels (so no service_name).
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    devices:
+      - /dev/kmsg
 
   grafana:
     image: grafana/grafana:12.3
@@ -118,3 +178,6 @@ volumes:
   loki-config: ~
   alloy-config: ~
   grafana-provisioning: ~
+  prometheus-config: ~
+  prometheus_data: ~
+  blackbox-config: ~
