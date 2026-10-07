@@ -1,0 +1,81 @@
+version: "3.7"
+
+services:
+  # Proxy
+  gateway:
+    # nightly to match the nightly bases of the auditlog frontend/backend images
+    image: openmrs/openmrs-reference-application-3-gateway:nightly
+    restart: "unless-stopped"
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "8092:80"
+    healthcheck:
+      test: exit 0
+
+  # Frontend (RefApp SPA + @openmrs/esm-audit-log-app, built by
+  # openmrs-module-auditlogweb's build-docker.yml)
+  frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:nightly-auditlog
+    restart: "unless-stopped"
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      timeout: 5s
+
+  # OpenMRS (RefApp backend + auditlogweb module, Envers and
+  # hibernate.hbm2ddl.auto=update baked into the image via OMRS_EXTRA_* vars;
+  # built by openmrs-module-auditlogweb's build-docker.yml)
+  backend:
+    image: openmrs/openmrs-reference-application-3-backend:nightly-auditlog
+    restart: "unless-stopped"
+    depends_on:
+      - db
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "false"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: ${OPENMRS_DB:-openmrs}
+      OMRS_CONFIG_CONNECTION_USERNAME: ${OPENMRS_DB_USER:-openmrs}
+      OMRS_CONFIG_CONNECTION_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
+      OMRS_ADMIN_PASSWORD_LOCKED: ${OMRS_ADMIN_PASSWORD_LOCKED:-true}
+    healthcheck:
+      # /health/started answers 200 only after full startup — the plain
+      # /openmrs path reads "healthy" during the startup page / setup wizard.
+      # A success during start_period marks healthy immediately; the long
+      # window only covers the slow first boot (liquibase install + demo data
+      # + Envers auditing can exceed 30 min).
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health/started"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+      start_period: 1h
+    volumes:
+      - openmrs-data:/openmrs/data
+
+  # MariaDB
+  db:
+    image: mariadb:10.11.7
+    restart: "unless-stopped"
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+    environment:
+      MYSQL_DATABASE: ${OPENMRS_DB:-openmrs}
+      MYSQL_USER: ${OPENMRS_DB_USER:-openmrs}
+      MYSQL_PASSWORD: ${OPENMRS_DB_PASSWORD:-Admin123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Admin123}
+    healthcheck:
+      test: "mysql --user=${OPENMRS_DB_USER:-openmrs} --password=${OPENMRS_DB_PASSWORD:-Admin123} --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  openmrs-data: ~
+  db-data: ~
