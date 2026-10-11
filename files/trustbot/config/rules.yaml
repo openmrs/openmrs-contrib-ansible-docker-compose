@@ -1,0 +1,107 @@
+# =============================================================================
+# OpenMRS Trust Bot — Rules Configuration
+#
+# This is an annotated EXAMPLE. Copy this file to /config/rules.yaml on the
+# host (mounted into the container at /config/rules.yaml) and adjust as
+# needed. Rules are evaluated on every trigger event. Each rule specifies:
+#   - One or more triggers (what causes this rule to fire)
+#   - One or more actions (what happens when it fires)
+#
+# rules.yaml is re-read from disk on every trigger event, so rule changes
+# take effect immediately without restarting the service.
+# Note: config.yaml changes (URLs, rate limits, etc.) require a container restart.
+#
+# A rule fires when ANY of its listed triggers matches the incoming event
+# (OR logic). AND logic (requiring multiple conditions to be true simultaneously)
+# is not supported in the MVP but is a noted future extension point (see
+# openspec/specs/config-schema.md).
+# =============================================================================
+
+rules:
+
+  # ---------------------------------------------------------------------------
+  # Automatically grant community edit access when a user reaches
+  # Discourse Trust Level 2, via the "trusted" Discourse Workflow (its
+  # HTTP action step POSTs here with X-Discourse-Workflow: trusted).
+  # Any workflow name a rule references here is accepted — there is no
+  # single hardcoded name.
+  # ---------------------------------------------------------------------------
+  - name: "Grant community edit access (Discourse TL2)"
+    enabled: true
+    triggers:
+      - type: workflow
+        name: "trusted"
+    actions:
+      - type: keycloak_add_groups
+        groups:
+          - jira-users
+          - jira-trunk-developer
+          - confluence-users
+
+  # ---------------------------------------------------------------------------
+  # Alternative: the same grant, via Discourse's native `user_promoted`
+  # webhook event instead of a Workflow — no Workflow configuration
+  # needed, just a webhook created in Discourse's admin UI (Admin > API
+  # > Webhooks) selecting the "user_promoted" event. Commented out by
+  # default so it doesn't duplicate the Workflow-based rule above; the
+  # action is idempotent, so enabling both at once is harmless, just
+  # redundant.
+  # ---------------------------------------------------------------------------
+  # - name: "Grant community edit access (user_promoted webhook)"
+  #   enabled: true
+  #   triggers:
+  #     - type: webhook
+  #       name: "user_promoted"
+  #   actions:
+  #     - type: keycloak_add_groups
+  #       groups:
+  #         - jira-users
+  #         - jira-trunk-developer
+  #         - confluence-users
+
+  # ---------------------------------------------------------------------------
+  # Automatically revoke community edit access when a user's trust level
+  # drops from 2 or higher to 0 or 1, via the "untrusted" Discourse
+  # Workflow (its HTTP action step POSTs here with
+  # X-Discourse-Workflow: untrusted). Mirrors the "trusted" grant rule
+  # above.
+  # ---------------------------------------------------------------------------
+  - name: "Revoke community edit access (Discourse TL drop)"
+    enabled: true
+    triggers:
+      - type: workflow
+        name: "untrusted"
+    actions:
+      - type: keycloak_remove_groups
+        groups:
+          - jira-users
+          - jira-trunk-developer
+          - confluence-users
+
+  # ---------------------------------------------------------------------------
+  # Manually grant community edit access via Slack /trust command.
+  # ---------------------------------------------------------------------------
+  - name: "Grant community edit access (manual /trust)"
+    enabled: true
+    triggers:
+      - type: slack_trust_command
+    actions:
+      - type: keycloak_add_groups
+        groups:
+          - jira-users
+          - jira-trunk-developer
+          - confluence-users
+
+  # ---------------------------------------------------------------------------
+  # Manually revoke community edit access via Slack /trust-revoke command.
+  # ---------------------------------------------------------------------------
+  - name: "Revoke community edit access (manual /trust-revoke)"
+    enabled: true
+    triggers:
+      - type: slack_revoke_command
+    actions:
+      - type: keycloak_remove_groups
+        groups:
+          - jira-users
+          - jira-trunk-developer
+          - confluence-users

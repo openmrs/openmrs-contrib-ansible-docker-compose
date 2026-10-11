@@ -1,0 +1,24 @@
+services:
+  trustbot:
+    image: openmrsinfra/trustbot:latest
+    restart: always
+    ports:
+      - "8086:8080"
+    env_file:
+      - .env
+    environment:
+      # Always the container's mount paths, regardless of what .env sets
+      # for local, non-Docker development -- these take precedence over
+      # the same-named keys from env_file above.
+      CONFIG_PATH: /config/config.yaml
+      RULES_PATH: /config/rules.yaml
+      DATABASE_PATH: /data/audit.db
+    volumes:
+      - ./config:/config:ro
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/health', timeout=2).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

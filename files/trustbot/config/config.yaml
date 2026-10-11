@@ -1,0 +1,121 @@
+# =============================================================================
+# OpenMRS Trust Bot — Service Configuration
+#
+# This is an annotated EXAMPLE. Copy this file to /config/config.yaml on the
+# host (mounted into the container at /config/config.yaml) and adjust values
+# for your environment. This file is loaded once at service startup;
+# changes require a container restart. Secrets are never stored here — see
+# .env.example for the environment variables this file references.
+#
+# See openspec/specs/config-schema.md for the full schema reference.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Discourse integration
+# -----------------------------------------------------------------------------
+discourse:
+  base_url: "https://talk.openmrs.org"
+
+  # Discourse API credentials are supplied via environment variables:
+  #   DISCOURSE_API_KEY
+  #   DISCOURSE_API_USERNAME
+  #
+  # Webhook/Workflow signature verification secrets are supplied via:
+  #   DISCOURSE_WEBHOOK_SECRET    (native Discourse webhooks)
+  #   DISCOURSE_WORKFLOW_SECRET   (Discourse Workflow HTTP action steps)
+  #
+  # Which specific webhook events or workflow names are acted on is
+  # declared in rules.yaml (type: webhook / type: workflow triggers),
+  # not here.
+
+# -----------------------------------------------------------------------------
+# Keycloak integration
+# -----------------------------------------------------------------------------
+keycloak:
+  # base_url: "http://host.docker.internal:8090"
+  # realm: "master"
+  base_url: "https://id-new.openmrs.org"
+  realm: "openmrs"
+
+  retry:
+    # Number of additional attempts after the first failure before giving up
+    max_retries: 1
+    # Seconds to wait between attempts
+    retry_delay_seconds: 2
+
+  # Keycloak service account credentials are supplied via environment variables:
+  #   KEYCLOAK_CLIENT_ID
+  #   KEYCLOAK_CLIENT_SECRET
+
+# -----------------------------------------------------------------------------
+# Slack integration
+# -----------------------------------------------------------------------------
+slack:
+  # The private channel ID from which trust commands are accepted.
+  # Commands issued from any other channel are rejected.
+  trusted_channel_id: "C0C4XDPLYU8"
+
+  # Slack app credentials are supplied via environment variables:
+  #   SLACK_BOT_TOKEN
+  #   SLACK_SIGNING_SECRET
+
+# -----------------------------------------------------------------------------
+# Rate limiting
+# -----------------------------------------------------------------------------
+rate_limiting:
+  # Discourse webhook endpoint: max requests per window per source IP
+  discourse_webhook:
+    max_requests: 60
+    window_seconds: 60
+
+  # Slack commands: max commands per window per Slack user
+  slack_commands:
+    max_requests: 10
+    window_seconds: 60
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+logging:
+  # Application log level: DEBUG | INFO | WARNING | ERROR
+  # Can also be set or overridden via LOG_LEVEL environment variable.
+  # Can be changed at runtime via the admin API without restarting.
+  level: "DEBUG"
+
+  # Format for log output. 'json' recommended for production (Docker log
+  # aggregation); 'text' may be easier for local development.
+  format: "json"    # json | text
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  # Path inside the container to the SQLite audit database.
+  # Should be within the host-mounted /data/ volume.
+  path: "./data/audit.db"
+
+# -----------------------------------------------------------------------------
+# Admin API
+# (Exposes health check and runtime log level control)
+# -----------------------------------------------------------------------------
+admin:
+  # Port the FastAPI service listens on
+  port: 8080
+
+  # Whether to require authentication on admin endpoints.
+  # Always set to true in production.
+  require_auth: true
+
+  # Admin API credentials are supplied via environment variables:
+  #   ADMIN_API_TOKEN
+
+# -----------------------------------------------------------------------------
+# Dry-run mode
+# -----------------------------------------------------------------------------
+# When true, every matched rule's actions are evaluated and logged to the
+# audit log (status 'dry_run'), but no external system (e.g. Keycloak) is
+# actually changed. Applies uniformly to the Discourse webhook and every
+# Slack command. Can also be set or overridden via the DRY_RUN environment
+# variable (true/false, case-insensitive); a blank/unset DRY_RUN falls back
+# to this value.
+dry_run: false
