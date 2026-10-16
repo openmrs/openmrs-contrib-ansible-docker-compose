@@ -80,7 +80,7 @@ logging:
   # Application log level: DEBUG | INFO | WARNING | ERROR
   # Can also be set or overridden via LOG_LEVEL environment variable.
   # Can be changed at runtime via the admin API without restarting.
-  level: "DEBUG"
+  level: "INFO"
 
   # Format for log output. 'json' recommended for production (Docker log
   # aggregation); 'text' may be easier for local development.
