@@ -30,6 +30,13 @@ services:
       OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
       OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY: ${OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY:-}
+    # chartsearchai starts llama-server with --mlock, which locks the model weights (~3 GB) in RAM
+    # only as far as RLIMIT_MEMLOCK allows; at Docker's default it locks nothing, and the weights
+    # are page cache the kernel drops under memory pressure and reads back mid-answer.
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health/started"]
       interval: 30s
