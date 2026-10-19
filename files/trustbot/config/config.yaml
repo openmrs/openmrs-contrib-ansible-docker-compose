@@ -55,6 +55,11 @@ slack:
   # Commands issued from any other channel are rejected.
   trusted_channel_id: "C0C4XDPLYU8"
 
+  # Default number of recent audit_log rows /trust-activity reports when
+  # issued with no argument. Overridable per-invocation (e.g.
+  # /trust-activity 20), capped at a hardcoded maximum of 50.
+  default_log_length: 10
+
   # Slack app credentials are supplied via environment variables:
   #   SLACK_BOT_TOKEN
   #   SLACK_SIGNING_SECRET
