@@ -315,6 +315,125 @@ services:
     volumes:
       - "${PROXY_TLS_CERTS_PATH:-proxy-tls-certs}:/etc/tls"
 
+  # OpenELIS Global
+  certs:
+    container_name: oe-certs 
+    image: itechuw/certgen:main
+    platform: linux/amd64
+    restart: always
+    environment:
+        - KEYSTORE_PW="kspass"
+        - TRUSTSTORE_PW="tspass"
+    networks:
+        - ozone
+    volumes:
+        -  key_trust-store-volume:/etc/openelis-global
+        -  keys-vol:/etc/ssl/private/
+        -  certs-vol:/etc/ssl/certs/
+
+  db.openelis.org:
+    container_name: openelisglobal-database 
+    image: postgres:14.4
+    restart: always
+    env_file:
+        - ./volumes/database/database.env
+    volumes:
+          # preserves the database between containers
+        - ./volumes/database/data:/var/lib/postgresql/data                
+          # files here will run on install
+        - ./volumes/database/dbInit:/docker-entrypoint-initdb.d   
+    networks:
+        - ozone
+    healthcheck:
+        test: [ "CMD", "pg_isready", "-q", "-d", "clinlims", "-U", "clinlims" ]
+        timeout: 45s
+        interval: 10s
+        retries: 10 
+          
+  oe.openelis.org:
+    container_name: openelisglobal-webapp 
+    image: itechuw/openelis-global-2:3.2.0.2 
+    platform: linux/amd64  
+    depends_on:
+        - db.openelis.org
+        - fhir.openelis.org
+        - certs
+    restart: always
+    networks:
+        - ozone
+    environment:
+        - DEFAULT_PW=adminADMIN! 
+        - TZ=America/New_York
+          # context.xml doesn't seem to be able to pick up environment variables directly, so we are passing them in as CATALINA_OPTS
+        - CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://db.openelis.org:5432/clinlims -Ddatasource.username=clinlims
+    volumes:
+        -  key_trust-store-volume:/etc/openelis-global
+        - ./volumes/plugins/:/var/lib/openelis-global/plugins
+        - ./volumes/tomcat/oe_server.xml:/usr/local/tomcat/conf/server.xml
+        - ./volumes/logs/oeLogs:/var/lib/openelis-global/logs
+        - ./volumes/logs/tomcatLogs/:/usr/local/tomcat/logs
+        - ./volumes/properties/SystemConfiguration.properties:/var/lib/openelis-global/properties/SystemConfiguration.properties
+        - ./volumes/test-map/test-loinc-map.csv:/var/lib/openelis-global/plugin-test-mappings/test-loinc-map.csv
+        - ./volumes/odoo/odoo-test-product-mapping.csv:/var/lib/openelis-global/odoo/odoo-test-product-mapping.csv
+        - ./volumes/ocl:/var/lib/openelis-global/ocl
+        -  lucene_index-vol:/var/lib/lucene_index
+    secrets:
+        - source: datasource.password
+        - source: common.properties
+          
+  fhir.openelis.org:
+    container_name: external-fhir-api
+    image: itechuw/openelis-global-2-fhir:3.2.0.2
+    platform: linux/amd64
+    depends_on:
+        - db.openelis.org
+        - certs    
+    networks:
+        - ozone
+    restart: always
+    environment:
+      SPRING_CONFIG_LOCATION: file:///run/secrets/hapi_application.yaml
+      TZ: America/New_York
+    secrets:
+        - source: hapi_application.yaml    
+
+        
+  frontend.openelis.org:
+    image: itechuw/openelis-global-2-frontend:3.2.0.2
+    container_name: openelisglobal-front-end
+    platform: linux/amd64
+    networks:
+        - ozone
+    environment:
+        - CHOKIDAR_USEPOLLING=true   
+    depends_on:  
+        - oe.openelis.org   
+    tty: true
+
+  proxy.openelis.org:
+    image: itechuw/openelis-global-2-proxy:3.2.0.2
+    container_name: openelisglobal-proxy
+    platform: linux/amd64
+    ports:
+        - 443:443
+    volumes:
+        - certs-vol:/etc/nginx/certs/
+        - keys-vol:/etc/nginx/keys/
+        - ./volumes/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+        - ozone
+    depends_on:  
+        - frontend.openelis.org
+
+secrets:
+  datasource.password:
+    file: ./volumes/properties/datasource.password  
+  common.properties:
+    file:  ./volumes/properties/common.properties  
+  hapi_application.yaml:
+    file: ./volumes/properties/hapi_application.yaml                
+
 volumes:
   mysql-data: ~
   postgresql-data: ~
@@ -334,3 +453,8 @@ volumes:
   senaite-blobstorage: ~
   senaite-filestorage: ~
   proxy-tls-certs: ~
+  db-data: ~
+  key_trust-store-volume: ~
+  certs-vol: ~
+  keys-vol: ~
+  lucene_index-vol: ~
