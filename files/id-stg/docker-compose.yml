@@ -30,7 +30,7 @@ services:
       test: curl --head -fsS http://localhost:8080/health/live || exit 1
     restart: "always"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
 
@@ -39,7 +39,7 @@ services:
     ports:
       - "587:25"
       - "25:25"
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     healthcheck:
       test: postfix status
     restart: "always"
