@@ -9,7 +9,7 @@ services:
       test: "pg_isready -U postgres"
     restart: "always"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
   keycloak:
     image: openmrsinfra/openmrs-id-keycloak:staging
     depends_on:
