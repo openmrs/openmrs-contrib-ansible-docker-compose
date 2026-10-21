@@ -25,7 +25,6 @@ services:
       KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
-      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED:-false}
     healthcheck:
       test: curl --head -fsS http://localhost:8080/health/live || exit 1
     restart: "always"
