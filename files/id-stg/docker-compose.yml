@@ -15,7 +15,7 @@ services:
     depends_on:
       - db
     environment:
-      KC_HOSTNAME: ${KC_HOSTNAME:}
+      KC_HOSTNAME: ${KC_HOSTNAME:-}
       KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
       KC_CACHE: local
       KC_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-postgres}
