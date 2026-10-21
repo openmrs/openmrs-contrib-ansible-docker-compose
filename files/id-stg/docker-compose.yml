@@ -1,8 +1,6 @@
-version: '3.5'
-
 services:
   db:
-    image: postgres:16.0-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -17,14 +15,17 @@ services:
     depends_on:
       - db
     environment:
-      - KC_HOSTNAME=${KC_HOSTNAME:-id-stg.openmrs.org}
-      - KC_DB_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
-      - KC_DB_USERNAME=${POSTGRES_USER:-postgres}
-      - KC_DB_PASSWORD=${POSTGRES_PASSWORD:-Postgres123}
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
-      - KC_PROXY=${KC_PROXY:-edge}
-      - KC_METRICS_ENABLED=${KC_METRICS_ENABLED:-false}
+      KC_HOSTNAME: ${KC_HOSTNAME:}
+      KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
+      KC_CACHE: local
+      KC_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-postgres}
+      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-Postgres123}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
+      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED:-false}
     healthcheck:
       test: curl --head -fsS http://localhost:8080/health/live || exit 1
     restart: "always"
@@ -32,6 +33,7 @@ services:
       - "8080:8080"
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+
   postfix:
     image: openmrsinfra/openmrs-id-postfix:staging
     ports:
@@ -42,33 +44,33 @@ services:
       test: postfix status
     restart: "always"
     environment:
-      - POSTFIX_MYHOSTNAME=${POSTFIX_HOSTNAME:-smtp-stg.openmrs.org}
-      - POSTFIX_MYDOMAIN=${POSTFIX_MYDOMAIN:-id-stg.openmrs.org}
-      - POSTFIX_MYNETWORKS=${POSTFIX_MYNETWORKS:-}
-      - POSTFIX_USERNAME=${POSTFIX_USERNAME:-smtp}
-      - POSTFIX_PASSWORD=${POSTFIX_PASSWORD:-Smtpd123}
-      - POSTFIX_TLS_CRT_FILENAME=${POSTFIX_SSL_CERT:-fullchain.pem}
-      - POSTFIX_TLS_KEY_FILENAME=${POSTFIX_SSL_CERT_KEY:-privkey.pem}
-      - SMTP_SERVER=${SMTP_SERVER:-smtp.server.com}
-      - SMTP_PORT=${SMTP_PORT:-587}
-      - SMTP_USERNAME=${SMTP_USERNAME:-smtp}
-      - SMTP_PASSWORD=${SMTP_PASSWORD:-Smtp123}
-      - LDAP_HOST=${LDAP_HOST:-ldaps://ldap-stg.openmrs.org}
-      - LDAP_PORT=${LDAP_PORT:-636}
-      - LDAP_USER=${LDAP_USER:-ldap}
-      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-Ldap123}
+      POSTFIX_MYHOSTNAME: ${POSTFIX_HOSTNAME:-smtp.openmrs.org}
+      POSTFIX_MYDOMAIN: ${POSTFIX_MYDOMAIN:-id.openmrs.org}
+      POSTFIX_MYNETWORKS: ${POSTFIX_MYNETWORKS:-}
+      POSTFIX_USERNAME: ${POSTFIX_USERNAME:-username}
+      POSTFIX_PASSWORD: ${POSTFIX_PASSWORD:-password}
+      POSTFIX_TLS_CRT_FILENAME: ${POSTFIX_SSL_CERT:-fullchain.pem}
+      POSTFIX_TLS_KEY_FILENAME: ${POSTFIX_SSL_CERT_KEY:-privkey.pem}
+      SMTP_SERVER: ${SMTP_SERVER:-smtp.server.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-smtp}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-Smtp123}
+      LDAP_HOST: ${LDAP_HOST:-ldaps://ldap.openmrs.org}
+      LDAP_PORT: ${LDAP_PORT:-636}
+      LDAP_USER: ${LDAP_USER:-ldap}
+      LDAP_BIND_PASSWORD: ${LDAP_BIND_PASSWORD:-Ldap123}
       # IP Updater Configuration
-      - ATLASSIAN_IP_JSON_URL=${ATLASSIAN_IP_JSON_URL:-https://ip-ranges.atlassian.com/}
-      - DATADOG_API_KEY=${DATADOG_API_KEY}
-      - DATADOG_APP_KEY=${DATADOG_APP_KEY}
-      - DATADOG_SITE=${DATADOG_SITE:-datadoghq.com}
-      - DATADOG_HOSTNAME=gode.openmrs.org
-      - IP_CHECK_INTERVAL=${IP_CHECK_INTERVAL:-3600}
-      - HEALTH_PORT=${HEALTH_PORT:-8090}
-      - METRIC_REPORT_INTERVAL=${METRIC_REPORT_INTERVAL:-300}
+      ATLASSIAN_IP_JSON_URL: ${ATLASSIAN_IP_JSON_URL:-https://ip-ranges.atlassian.com/}
+      DATADOG_API_KEY: ${DATADOG_API_KEY}
+      DATADOG_APP_KEY: ${DATADOG_APP_KEY}
+      DATADOG_SITE: ${DATADOG_SITE:-datadoghq.com}
+      DATADOG_HOSTNAME: adaba.openmrs.org
+      IP_CHECK_INTERVAL: ${IP_CHECK_INTERVAL:-3600}
+      HEALTH_PORT: ${HEALTH_PORT:-8090}
+      METRIC_REPORT_INTERVAL: ${METRIC_REPORT_INTERVAL:-300}
     volumes:
-      - /etc/letsencrypt/live/gode.openmrs.org:/etc/ssl/certs/
-      - /etc/letsencrypt/archive/gode.openmrs.org:/etc/archive/gode.openmrs.org
+      - /etc/letsencrypt/live/adaba.openmrs.org:/etc/ssl/certs/
+      - /etc/letsencrypt/archive/adaba.openmrs.org:/etc/archive/adaba.openmrs.org
       - ip_updater_logs:/var/log/ip_updater/
 volumes:
   postgres_data:
