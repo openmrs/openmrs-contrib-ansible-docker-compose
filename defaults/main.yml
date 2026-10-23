@@ -6,3 +6,4 @@
 #   - demo
 docker_deployment: []
 
+skip_compose_deploy: false

@@ -13,7 +13,6 @@ This is a custom role.
   - `docker-compose up` to start it, and `docker-compose down` to power it off.
   Follow more details on the README file.  
 
-
 ## Editing encrypted files
 
 You may find `.env` encrypted files in this repository. An `env.template` file should display the environment variables available. 
@@ -35,10 +34,7 @@ ansible-vault edit --vault-password-file /local/path/to/ansible-repo/.vault_pass
   Let us know if you prefer to have newer images deployed automatically from a Bamboo build or when pushed to dockerhub. 
   - Infrastructure team will merge the pull request, add passwords and secrets, configure 
   deployment of newer versions of the image, and deploy this docker-compose app to a server.
-  
-_Note: while you are can deploy new versions of the application without infrastructure team involvement, 
-  changes to docker-compose files will need to be deployed by us._
- 
+   
 ### Guidelines 
  Your docker-compose file needs to follow the following rules:
   
@@ -46,8 +42,8 @@ _Note: while you are can deploy new versions of the application without infrastr
   (Use <https://hub.docker.com/u/openmrs/> for our own images).
   You cannot build an image from this repository. 
   - Docker images should have CI or an automated build to deploy to dockerhub.
-  - Pay a lot of attention your image tags. As soon as an image is pushed to dockerhub, 
-  deployment will be automatically started. So it's recommended to have an image tag per server 
+  - Pay a lot of attention your image tags. As soon as an image is pushed to dockerhub. 
+  So it's recommended to have an image tag per server 
   deployed (e.g. 'stg' and 'prd', instead of using 'latest'). 
   - Docker images should _never_ contain passwords and secrets hardcoded. 
   Always allow secrets to be overridden by environment variables. 
@@ -63,3 +59,12 @@ _Note: while you are can deploy new versions of the application without infrastr
   `DESTROY_VOLUMES=false`
 
   By default, volumes are destroyed on every deployment.
+
+## Ansible Tasks
+
+This Ansible role:
+ * Copies the stack's files to the machine
+ * Ensures that our deploy scripts are installed
+ * Runs the deploy-compose script to start the stack
+
+To skip the deploy at the end, set the `skip_compose_deploy` variable to true

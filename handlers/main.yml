@@ -2,6 +2,5 @@
 
   - name: restart docker compose
     shell: /usr/local/bin/deploy-compose {{ item.item }}
-    when: item.changed
+    when: item.changed and not skip_compose_deploy
     with_items: "{{ docker_compose_projects.results }}"
-
