@@ -1,7 +1,7 @@
 ---
 services:
   db:
-    image: mysql:5.6
+    image: mysql:9.7
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysqlfordocker}
       MYSQL_DATABASE: ${YOURLS_DB_NAME:-dockerdb}
