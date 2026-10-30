@@ -165,6 +165,12 @@ services:
         target: /opt/data
         volume:
           subpath: default
+      - type: volume
+        source: agents-data
+        target: /opt/data/.env
+        read_only: true
+        volume:
+          subpath: default/.env
       - ./hermes/souls/default.md:/opt/data/SOUL.md:ro
       - ./hermes/config.yaml:/opt/data/config.yaml:ro
 
