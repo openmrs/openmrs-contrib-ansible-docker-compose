@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Runs the hermes-admin tool in its container. With no arguments in a terminal it opens the
+# interactive interface; otherwise arguments are passed through, e.g.
+#   bin/admin list
+#   bin/admin create docs-bot --mcp rovo_read --slack
+#   bin/admin compose docs-bot >> snippet.yaml
+#
+# Works with Docker or Podman; see bin/compose.sh for how the Compose tool is chosen.
+
+set -euo pipefail
+# shellcheck source-path=SCRIPTDIR source=compose.sh
+. "$(dirname "$0")/compose.sh"
+
+# shellcheck disable=SC2046 # tty_flag prints nothing or a single flag
+compose run --rm $(tty_flag) admin "$@"

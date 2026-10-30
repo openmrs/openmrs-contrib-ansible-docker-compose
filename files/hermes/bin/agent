@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Runs the Hermes CLI inside a running agent's container: bin/agent <name> [hermes arguments].
+# With no Hermes arguments it starts an interactive Hermes session, e.g.
+#   bin/agent default
+#   bin/agent default config get memory
+#   bin/agent default mcp test rovo_read
+#
+# The image's `hermes` command drops to the agent's own user, so files it writes stay readable by
+# the agent. Works with Docker or Podman; see bin/compose.sh for how the Compose tool is chosen.
+
+set -euo pipefail
+# shellcheck source-path=SCRIPTDIR source=compose.sh
+. "$(dirname "$0")/compose.sh"
+
+if [ $# -lt 1 ]; then
+  echo "usage: $(basename "$0") <agent name> [hermes arguments]" >&2
+  exit 2
+fi
+name="$1"
+shift
+
+# shellcheck disable=SC2046 # tty_flag prints nothing or a single flag
+compose exec $(tty_flag) "agent-$name" hermes "$@"

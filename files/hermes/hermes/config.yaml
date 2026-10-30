@@ -1,0 +1,142 @@
+# config.yaml for every agent, mounted read-only as each agent's /opt/data/config.yaml, so neither
+# the agent nor text it reads can change it (e.g. to send requests elsewhere). Hermes commands that
+# write config, such as `/model --global`, fail. Changes take effect when an agent restarts.
+
+# Hermes' config schema version. At startup Hermes migrates any older file by rewriting this stamp,
+# which a read-only file can't take, so keep it at the version of the Hermes image in compose.yaml
+# (see the upgrade checklist below).
+_config_version: 51
+
+model:
+  provider: litellm
+  default: auto
+  # Hermes can't look up a window for the `auto` router. The tier models have 1M-token windows,
+  # but quality degrades past ~500k, so history is compacted before this.
+  context_length: 512000
+  # Must match providers.litellm.base_url. Hermes only honors context_length when this URL matches
+  # the runtime route; without it the pin is silently dropped and Hermes assumes 256k.
+  base_url: http://litellm:4000/v1
+
+providers:
+  litellm:
+    base_url: http://litellm:4000/v1
+    key_env: LITELLM_API_KEY
+    session_affinity_header: x-litellm-session-id
+
+# Side tasks (titles, compression, vision, ...) always use `fast` instead of going through the
+# `auto` router. Hermes has no global setting for this, and a task left unset silently falls back
+# to the main model (`auto`), so every task must be listed.
+#
+# CHECK ON EVERY HERMES UPGRADE (HERMES_IMAGE in compose.yaml): new versions can add side tasks.
+#   1. Run tests/run.sh. Its side-task check lists every task the new image knows about and fails
+#      on any that isn't listed here.
+#   2. Add each reported task below as `<task>: *fast`.
+#   3. Set _config_version above to the new image's version, which tests/run.sh also reports.
+auxiliary:
+  vision: &fast
+    provider: litellm
+    model: fast
+  approval: *fast
+  background_review: *fast
+  call: *fast
+  compression: *fast
+  curator: *fast
+  goal_judge: *fast
+  kanban_decomposer: *fast
+  kanban_estimator: *fast
+  mcp: *fast
+  memory_query_rewrite: *fast
+  moa_aggregator: *fast
+  moa_reference: *fast
+  monitor: *fast
+  profile_describer: *fast
+  review: *fast
+  skills_hub: *fast
+  title_generation: *fast
+  triage_specifier: *fast
+  tts_audio_tags: *fast
+  voice_chat: *fast
+
+# Model calls per run, so a runaway task can't spend the agent's whole monthly budget. At 80% of
+# the cap Hermes tells the model to wrap up rather than being cut off mid-task.
+agent:
+  max_turns: 50
+  budget_warning_ratio: 0.8
+
+# Builds and package-manager commands never run in the agent's own container, which holds its Slack
+# and LiteLLM tokens: running a pull request's build there would hand those to the PR's author.
+# They run in the sandbox MCP server instead. Hermes matches these against each part of a compound
+# command (`cd x && mvn verify`, `sh -c "..."`, full paths) and blocks a match outright, even under
+# /yolo. A script file or execute_code can still get round them, so SOUL.md also sends builds to the
+# sandbox.
+approvals:
+  deny:
+    - "mvn"
+    - "mvn *"
+    - "mvnw"
+    - "mvnw *"
+    - "*/mvnw*"
+    - "gradle"
+    - "gradle *"
+    - "gradlew"
+    - "gradlew *"
+    - "*/gradlew*"
+    - "npm"
+    - "npm *"
+    - "npx"
+    - "npx *"
+    - "yarn"
+    - "yarn *"
+    - "pnpm"
+    - "pnpm *"
+    - "corepack"
+    - "corepack *"
+    - "node"
+    - "node *"
+
+# Hermes keeps one USER.md profile per agent, not per person, and adds it to every session's
+# prompt. Agents serve many people in shared Slack spaces, so it stays off: anything saved about
+# one person would reach everyone. MEMORY.md (agent notes) stays on; SOUL.md limits what goes in.
+memory:
+  user_profile_enabled: false
+
+# Sessions (every message and tool call, in state.db) are deleted 30 days after they end. The
+# gateway checks at most once a day.
+sessions:
+  auto_prune: true
+  retention_days: 30
+
+# One entry per MCP server in litellm/config.yaml, each at LiteLLM's /mcp/<server> path. LiteLLM
+# adds the server's credential, which never reaches the agent, and refuses servers this agent's key
+# hasn't been granted.
+#
+# strict_redirect_headers keeps the key from following a redirect, and stops Hermes retrying a
+# refused server over SSE, which LiteLLM leaves hanging until Hermes' connect timeout.
+#
+# `trust: untrusted` makes Hermes ask for approval in Slack before any tool on that server that
+# isn't annotated read-only, and block the call if no one approves. The Rovo write servers get it
+# so that text in an issue, page, or pull request can't make the agent edit Jira or Confluence
+# unseen.
+mcp_servers:
+  rovo_read:
+    url: http://litellm:4000/mcp/rovo_read
+    strict_redirect_headers: true
+    headers:
+      x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
+  rovo_jira_write:
+    url: http://litellm:4000/mcp/rovo_jira_write
+    strict_redirect_headers: true
+    trust: untrusted
+    headers:
+      x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
+  rovo_confluence_write:
+    url: http://litellm:4000/mcp/rovo_confluence_write
+    strict_redirect_headers: true
+    trust: untrusted
+    headers:
+      x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
+  sandbox:
+    url: http://litellm:4000/mcp/sandbox
+    strict_redirect_headers: true
+    headers:
+      x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"

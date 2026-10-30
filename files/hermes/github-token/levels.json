@@ -1,0 +1,24 @@
+{
+  "github_read": {
+    "description": "Read-only access to the App installation's repositories: code, PRs, CI runs, checks, statuses, deployments, artifacts, and code quality",
+    "permissions": {
+      "actions": "read",
+      "artifact_metadata": "read",
+      "checks": "read",
+      "code_quality": "read",
+      "contents": "read",
+      "deployments": "read",
+      "metadata": "read",
+      "pull_requests": "read",
+      "statuses": "read"
+    }
+  },
+  "github_pr": {
+    "description": "Push branches and open pull requests. Pushes are limited to apollo/* branches by an org ruleset, not by this service",
+    "permissions": {
+      "contents": "write",
+      "metadata": "read",
+      "pull_requests": "write"
+    }
+  }
+}
