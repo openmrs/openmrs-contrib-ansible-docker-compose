@@ -189,7 +189,7 @@ services:
     environment:
       <<: *workspace-environment
       WORKSPACE_IDLE_MINUTES: "180"
-      WORKSPACE_KEEP_FILES: "false"
+      WORKSPACE_KEEP_FILES: "true"
     volumes:
       - type: volume
         source: workspace-config
