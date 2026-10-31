@@ -6,7 +6,7 @@
 #   bin/admin create docs-bot --mcp rovo_read --slack
 #   bin/admin compose docs-bot >> snippet.yaml
 #
-# Works with Docker or Podman; see bin/compose.sh for how the Compose tool is chosen.
+# Works with Docker or Podman (see bin/compose.sh).
 
 set -euo pipefail
 # shellcheck source-path=SCRIPTDIR source=compose.sh

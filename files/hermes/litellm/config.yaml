@@ -1,18 +1,13 @@
-# LiteLLM gateway config. All credentials are `os.environ/...` references resolved from
-# secrets/litellm.env, which is mounted only into the litellm container.
+# Credentials are `os.environ/...` references to secrets/litellm.env (litellm container only).
 
-# fast / balanced / strong are provider-neutral names; the actual models come from LLM_MODEL_* in
-# secrets/litellm.env. No api_key is set, so LiteLLM uses each provider's standard key variable
-# (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, ...).
+# fast / balanced / strong are provider-neutral; LLM_MODEL_* picks the models. With no api_key,
+# LiteLLM uses each provider's standard key variable (ANTHROPIC_API_KEY, ...). Agents normally ask
+# for `auto`, which picks a tier per request (see tier_classifier.py).
 #
-# Agents normally ask for `auto`, which picks one of them per request. See tier_classifier.py for
-# how the tier is chosen.
-#
-# cache_control_injection_points turns on provider prompt caching for providers that use explicit
-# cache markers (Anthropic, Bedrock Claude, ...); LiteLLM skips it for others. Agents ask for
-# `auto`, which Hermes doesn't recognize as Claude, so Hermes adds no markers itself. The system
-# message marker caches tools + system prompt; the last-message marker caches the conversation so
-# far for the next turn. The cache is per model, so a turn routed to a different tier starts cold.
+# cache_control_injection_points enables prompt caching on providers with explicit cache markers
+# (Anthropic, ...). Hermes adds none itself because it doesn't recognize `auto` as Claude. The
+# system marker caches tools + system prompt; the last-message marker caches the conversation for
+# the next turn. Caches are per model, so switching tiers starts cold.
 model_list:
   - model_name: fast
     litellm_params:
@@ -38,8 +33,8 @@ model_list:
           role: system
         - location: message
           index: -1
-  # TypeSafe's Jev decision model, used only by the `auto` router's Jev classifier (agents' keys
-  # can't call it). LiteLLM reads TYPESAFE_API_KEY, and TYPESAFE_API_BASE if set, itself.
+  # Used only by the `auto` router's Jev classifier; agents' keys can't call it. LiteLLM reads
+  # TYPESAFE_API_KEY (and TYPESAFE_API_BASE) from the environment.
   - model_name: jev-router
     litellm_params:
       model: typesafe/jev-latest
@@ -58,10 +53,9 @@ model_list:
           COMPLEX: balanced
           REASONING: strong
 
-# Rovo is exposed once per Atlassian service account: rovo_read reads Jira and Confluence, and each
-# write server can also write to its one product. Access is enforced by the scopes on those service
-# accounts; which agent may use which server is set per virtual key by the admin tool
-# (object_permission.mcp_servers).
+# One Rovo server per Atlassian service account; each account's scopes enforce its access
+# (rovo_read: Jira and Confluence read; each write server adds writes to its one product). Per-key
+# grants are set by the admin tool (object_permission.mcp_servers).
 mcp_servers:
   rovo_read:
     url: https://mcp.atlassian.com/v2/mcp
@@ -78,11 +72,6 @@ mcp_servers:
     transport: http
     auth_type: bearer_token
     auth_value: os.environ/ROVO_CONFLUENCE_WRITE_API_KEY
-  # Runs builds and tests of openmrs repositories (sandbox/server.py). Needs no credential: only
-  # LiteLLM can reach it, and it holds nothing worth protecting.
-  sandbox:
-    url: http://sandbox:8080/mcp
-    transport: http
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -90,6 +79,6 @@ general_settings:
   # Keys get no MCP servers unless explicitly granted, instead of inheriting team defaults.
   require_key_mcp_access_defined: true
   store_model_in_db: true
-  # Spend logs hold per-request metadata (key, model, tokens, cost), not prompts or replies. A daily
-  # job deletes rows older than this; daily spend totals are kept.
+  # Spend logs hold per-request metadata (key, model, tokens, cost), not prompts or replies. Daily
+  # spend totals outlive this.
   maximum_spend_logs_retention_period: 120d

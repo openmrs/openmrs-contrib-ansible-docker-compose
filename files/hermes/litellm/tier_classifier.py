@@ -1,27 +1,18 @@
-"""Complexity-router classifier plugin that tries a list of classifiers in order.
+"""`classifier_plugin` for the `auto` router in config.yaml: tries classifiers in order.
 
-The `auto` router in config.yaml uses this as its `classifier_plugin`. Each classifier named in
-ROUTER_CLASSIFIERS ("jev", "llm") is a private LiteLLM ComplexityRouter configured with that
-built-in classifier type, so classification reuses LiteLLM's own Jev client, LLM rubric,
-conversation-context handling, circuit breakers, and spend logging. The first classifier that
-actually decides the tier wins. If none does, `classify` returns None and the `auto` router's
-`classifier_fallback` (the local heuristic scorer) picks the tier.
+Each classifier in ROUTER_CLASSIFIERS ("jev", "llm") is a private LiteLLM ComplexityRouter of that
+built-in type, reusing LiteLLM's classifiers, circuit breakers, and spend logging. The first to
+decide wins; if none does, `classify` returns None and `classifier_fallback` (heuristic) decides.
 
-Configuration (environment variables on the litellm container):
-    ROUTER_CLASSIFIERS       Comma-separated order, default "jev,llm". "jev" is skipped with a
-                             warning when the `jev-router` model is missing or has no TypeSafe key.
-    ROUTER_CLASSIFIER_MODEL  model_list name the "llm" classifier calls, default "fast". Must be a
-                             plain model, not a router like `auto`; otherwise the "llm"
-                             classifier is skipped with an error.
-    TYPESAFE_API_KEY         TypeSafe credential for Jev, used by the `jev-router` model unless it
-                             sets its own api_key.
+Environment (litellm container):
+    ROUTER_CLASSIFIERS       Order, default "jev,llm". "jev" is skipped with a warning if the
+                             `jev-router` model in config.yaml is missing or has no TypeSafe key.
+    ROUTER_CLASSIFIER_MODEL  Model the "llm" classifier calls, default "fast". A router such as
+                             `auto` is rejected and the "llm" classifier skipped.
+    TYPESAFE_API_KEY         Jev credential, unless `jev-router` sets its own api_key.
 
-The "jev" classifier calls the `jev-router` decision model in config.yaml through LiteLLM's
-Decisions API, so its connection settings live there like any other model's.
-
-This depends on LiteLLM internals (ComplexityRouter, _extract_current_ask_and_system_prompt), so
-re-test it whenever the LiteLLM image tag changes. The router's `classifier_plugin_timeout_ms` must
-cover the sum of the per-classifier timeouts below.
+Depends on LiteLLM internals (ComplexityRouter, _extract_current_ask_and_system_prompt): re-test on
+every LiteLLM upgrade. `classifier_plugin_timeout_ms` must cover the timeouts below run back to back.
 """
 
 from __future__ import annotations
@@ -37,8 +28,7 @@ from litellm.router_strategy.complexity_router.complexity_router import (
 )
 from litellm.types.router import RoutingContext
 
-# Only non-empty pools matter here: a delegate's verdict is a tier name, and the `auto` router
-# maps it to models using its own `tiers`.
+# Delegates need non-empty pools, but only their tier name is used; `auto` maps it with its own `tiers`.
 _DELEGATE_TIERS: Final = {"SIMPLE": "fast", "MEDIUM": "balanced", "COMPLEX": "balanced", "REASONING": "strong"}
 
 # ClassificationOutcome.cause when the named classifier, not a fallback, chose the tier.
@@ -48,8 +38,7 @@ _JEV_DEPLOYMENT: Final = "jev-router"
 _JEV_TIMEOUT_MS: Final = 3000
 _LLM_TIMEOUT_MS: Final = 3000
 
-# Set while a classification is in progress. If the classifier's own model call routes back into
-# an auto router that uses this plugin, the nested classify() sees it and declines immediately
+# Set during classification, so a classifier model call that routes back into `auto` declines
 # instead of recursing.
 _classifying: ContextVar[bool] = ContextVar("tier_classifier_classifying", default=False)
 
@@ -57,9 +46,8 @@ _classifying: ContextVar[bool] = ContextVar("tier_classifier_classifying", defau
 def _router_model_problem(router: Any, model_name: str) -> str | None:
     """Why `model_name` can't be the LLM classifier's model, or None if it can.
 
-    Rejects names with no deployment and names that resolve (directly or through a model group
-    alias) to a router model such as `auto`, since classifying with a router would call this
-    plugin again.
+    Rejects unknown names and routers such as `auto` (directly or through a model group alias), which
+    would call this plugin again.
     """
     deployments = router.get_model_list(model_name=model_name) or []
     if not deployments:
@@ -77,8 +65,8 @@ def _router_model_problem(router: Any, model_name: str) -> str | None:
 def _jev_deployment_problem(router: Any) -> str | None:
     """Why the Jev classifier can't use the `jev-router` model, or None if it can.
 
-    LiteLLM only finds a missing TypeSafe key when it makes the call, so without this check every
-    request would wait for a failed Jev call before the next classifier ran.
+    Checked up front because LiteLLM only notices a missing key on the call, so every request
+    would otherwise wait on a failed Jev call.
     """
     deployments = router.get_model_list(model_name=_JEV_DEPLOYMENT) or []
     if not deployments:
@@ -97,8 +85,7 @@ class ChainedTierClassifier:
             raise ValueError(f"ROUTER_CLASSIFIERS has unknown classifiers {unknown}; expected any of {list(_DECIDED_CAUSE)}")
         self._classifiers = classifiers
         self._llm_model = llm_model
-        # Built on first use (the proxy's Router does not exist yet when LiteLLM imports this
-        # module) and rebuilt whenever the proxy replaces its Router.
+        # Lazy: the proxy's Router doesn't exist at import time, and can be replaced later.
         self._router: Any = None
         self._delegates: tuple[tuple[str, ComplexityRouter], ...] = ()
 

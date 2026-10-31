@@ -6,8 +6,8 @@
 #   bin/agent default config get memory
 #   bin/agent default mcp test rovo_read
 #
-# The image's `hermes` command drops to the agent's own user, so files it writes stay readable by
-# the agent. Works with Docker or Podman; see bin/compose.sh for how the Compose tool is chosen.
+# The image's `hermes` drops to the agent's user, so files it writes stay readable by the agent.
+# Works with Docker or Podman (see bin/compose.sh).
 
 set -euo pipefail
 # shellcheck source-path=SCRIPTDIR source=compose.sh

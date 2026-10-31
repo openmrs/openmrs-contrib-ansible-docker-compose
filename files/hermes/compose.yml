@@ -21,18 +21,47 @@ x-hermes-agent: &hermes-agent
   cap_drop: [ALL]
   cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID]
   command: ["gateway", "run"]
-  networks: [agents]
-  depends_on:
-    litellm:
-      condition: service_healthy
-  environment:
+  networks: [agents, workspaces]
+  environment: &hermes-agent-environment
     HERMES_UID: ${HERMES_UID:-10000}
     HERMES_GID: ${HERMES_GID:-10000}
+    # Hermes' file tools only write under this path; they run in the workspace, hence its /work.
+    HERMES_WRITE_SAFE_ROOT: /work
+
+# Each agent's workspace, where all its commands run. Its only secret is a LiteLLM key that can get
+# GitHub tokens for the agent's granted levels.
+x-workspace: &workspace
+  image: openmrsinfra/hermes-workspace:nightly
+  restart: always
+  logging: *logging
+  # An init process reaps the processes the supervisor kills.
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  # Root only for sshd (SYS_CHROOT is for its privilege separation) and to kill and clean up after
+  # the workspace user.
+  cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID, SYS_CHROOT]
+  read_only: true
+  tmpfs: ["/tmp:size=2g", "/run"]
+  networks: [workspaces, workspace-egress]
+  environment: &workspace-environment
+    # Resets after this many minutes with no one logged in: kills the workspace user's processes and,
+    # unless WORKSPACE_KEEP_FILES is "true", deletes /work.
+    WORKSPACE_IDLE_MINUTES: "180"
+    WORKSPACE_KEEP_FILES: "false"
     # The github_pr App's bot account, from ./.env; commits fail until both are set (see README.md).
     GIT_AUTHOR_NAME: ${GIT_BOT_NAME:-}
     GIT_AUTHOR_EMAIL: ${GIT_BOT_EMAIL:-}
     GIT_COMMITTER_NAME: ${GIT_BOT_NAME:-}
     GIT_COMMITTER_EMAIL: ${GIT_BOT_EMAIL:-}
+  mem_limit: 4g
+  cpus: 2
+  pids_limit: 4096
+  healthcheck:
+    test: ["CMD", "python3", "-c", "import socket; socket.create_connection(('127.0.0.1', 2222), timeout=3)"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
 
 services:
   postgres:
@@ -62,7 +91,7 @@ services:
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     command: ["--config", "/app/config.yaml", "--port", "4000"]
-    networks: [agents, litellm-db, admin, sandbox]
+    networks: [agents, litellm-db, admin]
     env_file: [secrets/litellm.env, secrets/master.env]
     volumes:
       - ./litellm/config.yaml:/app/config.yaml:ro
@@ -88,42 +117,12 @@ services:
     cap_drop: [ALL]
     read_only: true
     tmpfs: [/tmp]
-    networks: [agents]
+    networks: [agents, workspaces]
     env_file:
       - path: secrets/github-app.env
         required: false
     volumes:
       - ./github-token/levels.json:/app/levels.json:ro
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Builds and tests openmrs repositories for agents, as the `sandbox` MCP server in LiteLLM (see
-  # sandbox/server.py). Builds run as an unprivileged user, and everything a job leaves outside
-  # /cache is removed when it ends. Holds no secrets and mounts no agent data.
-  sandbox:
-    image: openmrsinfra/hermes-sandbox:nightly
-    restart: always
-    logging: *logging
-    # An init process reaps the build processes the server kills.
-    init: true
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
-    # Runs as root only to start builds as the build user, and to kill and clean up after them.
-    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID]
-    read_only: true
-    tmpfs: ["/tmp:size=2g"]
-    networks: [sandbox]
-    volumes:
-      # Job directories, emptied after every job.
-      - sandbox-work:/work
-      # Maven, npm, Yarn, pnpm, and Corepack caches, kept between jobs.
-      - sandbox-cache:/cache
-    mem_limit: 4g
-    cpus: 2
-    pids_limit: 4096
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
       interval: 10s
@@ -151,14 +150,25 @@ services:
       HERMES_GID: ${HERMES_GID:-10000}
     volumes:
       - agents-data:/agents
+      - workspace-config:/workspaces
       - ./github-token/levels.json:/templates/github-levels.json:ro
     depends_on:
       litellm:
         condition: service_healthy
 
-  # One service per agent, named agent-<name>
+  # Two services per agent, agent-<name> and workspace-<name>. Restarting a workspace restarts its
+  # agent, so it forgets directories the reset removed.
   agent-default:
     <<: *hermes-agent
+    environment:
+      <<: *hermes-agent-environment
+      TERMINAL_SSH_HOST: workspace-default
+    depends_on:
+      litellm:
+        condition: service_healthy
+      workspace-default:
+        condition: service_healthy
+        restart: true
     volumes:
       - type: volume
         source: agents-data
@@ -174,18 +184,39 @@ services:
       - ./hermes/souls/default.md:/opt/data/SOUL.md:ro
       - ./hermes/config.yaml:/opt/data/config.yaml:ro
 
+  workspace-default:
+    <<: *workspace
+    environment:
+      <<: *workspace-environment
+      WORKSPACE_IDLE_MINUTES: "180"
+      WORKSPACE_KEEP_FILES: "false"
+    volumes:
+      - type: volume
+        source: workspace-config
+        target: /config
+        read_only: true
+        volume:
+          subpath: default
+      - workspace-cache:/cache
+      # Emptied whenever the workspace resets.
+      - /work
+
 networks:
   agents: {}
   litellm-db:
     internal: true
   admin:
     internal: true
-  sandbox: {}
+  workspaces:
+    internal: true
+  workspace-egress: {}
 
 volumes:
   postgres-data: {}
-  sandbox-work: {}
-  sandbox-cache: {}
+  # Maven, npm, Yarn, pnpm, and Corepack caches, shared by every workspace and kept across resets.
+  workspace-cache: {}
+  # Per agent: its workspace's SSH keys and LiteLLM key.
+  workspace-config: {}
   # One subdirectory per agent (its Hermes home, including .env). Only the admin container mounts
   # the whole volume.
   agents-data: {}
