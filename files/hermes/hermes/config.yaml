@@ -60,7 +60,7 @@ agent:
   budget_warning_ratio: 0.8
 
 # The terminal, file tools, and execute_code run over SSH in the agent's own workspace
-# (TERMINAL_SSH_HOST in compose.yaml), not here. Only the host key the admin tool writes to
+# (TERMINAL_SSH_HOST, which the admin tool writes to each agent's .env), not here. Only the host key the admin tool writes to
 # ssh/known_hosts is trusted (see hermes/image).
 #
 # The workspace resets when idle (see workspace/supervisor.py). A session whose directory was removed
@@ -94,19 +94,19 @@ sessions:
 # and block it if no one approves, so text in an issue, page, or PR can't make the agent write to
 # Jira or Confluence unseen.
 mcp_servers:
-  rovo_read:
-    url: http://litellm:4000/mcp/rovo_read
+  atlassian_read:
+    url: http://litellm:4000/mcp/atlassian_read
     strict_redirect_headers: true
     headers:
       x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
-  rovo_jira_write:
-    url: http://litellm:4000/mcp/rovo_jira_write
+  atlassian_jira_write:
+    url: http://litellm:4000/mcp/atlassian_jira_write
     strict_redirect_headers: true
     trust: untrusted
     headers:
       x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
-  rovo_confluence_write:
-    url: http://litellm:4000/mcp/rovo_confluence_write
+  atlassian_confluence_write:
+    url: http://litellm:4000/mcp/atlassian_confluence_write
     strict_redirect_headers: true
     trust: untrusted
     headers:

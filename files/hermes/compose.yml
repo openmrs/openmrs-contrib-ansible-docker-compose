@@ -22,7 +22,7 @@ x-hermes-agent: &hermes-agent
   cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID]
   command: ["gateway", "run"]
   networks: [agents, workspaces]
-  environment: &hermes-agent-environment
+  environment:
     HERMES_UID: ${HERMES_UID:-10000}
     HERMES_GID: ${HERMES_GID:-10000}
     # Hermes' file tools only write under this path; they run in the workspace, hence its /work.
@@ -42,7 +42,8 @@ x-workspace: &workspace
   # the workspace user.
   cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID, SYS_CHROOT]
   read_only: true
-  tmpfs: ["/tmp:size=2g", "/run"]
+  # exec because Docker defaults tmpfs to noexec, and builds load native libraries from /tmp
+  tmpfs: ["/tmp:size=2g,exec", "/run"]
   networks: [workspaces, workspace-egress]
   environment: &workspace-environment
     # Resets after this many minutes with no one logged in: kills the workspace user's processes and,
@@ -91,7 +92,7 @@ services:
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     command: ["--config", "/app/config.yaml", "--port", "4000"]
-    networks: [agents, litellm-db, admin]
+    networks: [agents, litellm-db, admin, atlassian]
     env_file: [secrets/litellm.env, secrets/master.env]
     volumes:
       - ./litellm/config.yaml:/app/config.yaml:ro
@@ -129,6 +130,47 @@ services:
       timeout: 5s
       retries: 5
 
+  # Jira and Confluence tools for the atlassian_* MCP servers in litellm/config.yaml. It holds no
+  # credentials and refuses requests without one: each request carries the Atlassian API key of the
+  # LiteLLM server it came through, which also limits the tools each server exposes. ENABLED_TOOLS
+  # must list exactly the tools those servers allow between them.
+  mcp-atlassian:
+    image: ghcr.io/sooperset/mcp-atlassian:0.23.1@sha256:5b7c9b64d4eb3210cab74be8bf3e6aeea9ed14f3042dc59ba5c5287bd4dbe466
+    restart: always
+    logging: *logging
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    command: ["--transport", "streamable-http", "--stateless", "--host", "0.0.0.0", "--port", "9000"]
+    networks: [atlassian]
+    # The Atlassian site: JIRA_URL, CONFLUENCE_URL, ATLASSIAN_OAUTH_CLOUD_ID.
+    env_file: secrets/atlassian.env
+    environment:
+      # Callers bring their own key (an Atlassian service-account API key, used as a bearer token).
+      ATLASSIAN_OAUTH_ENABLE: "true"
+      TOOLSETS: all
+      ENABLED_TOOLS: >-
+        jira_get_issue,jira_search,jira_get_transitions,jira_get_link_types,jira_search_fields,
+        jira_get_field_options,jira_get_all_projects,jira_get_project_versions,
+        jira_get_project_components,jira_batch_get_changelogs,jira_get_user_profile,
+        jira_get_issue_watchers,jira_download_attachments,jira_get_issue_images,
+        confluence_search,confluence_get_page,confluence_get_page_children,
+        confluence_get_space_page_tree,confluence_get_comments,confluence_get_inline_comments,
+        confluence_get_labels,confluence_get_page_history,confluence_get_page_diff,
+        confluence_search_user,confluence_get_attachments,confluence_download_attachment,
+        confluence_get_page_images,
+        jira_add_comment,jira_edit_comment,jira_update_issue,jira_transition_issue,jira_create_issue,
+        jira_create_issue_link,jira_create_remote_issue_link,
+        confluence_create_page,confluence_update_page,confluence_update_page_section,
+        confluence_add_comment,confluence_reply_to_comment,confluence_add_inline_comment,
+        confluence_add_label
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Manages agents' keys, MCP and GitHub access, and Slack settings. Not started by
   # `docker compose up`; run it with `docker compose run --rm admin` (interactive) or
   # `... admin <command>`.
@@ -160,9 +202,6 @@ services:
   # agent, so it forgets directories the reset removed.
   agent-default:
     <<: *hermes-agent
-    environment:
-      <<: *hermes-agent-environment
-      TERMINAL_SSH_HOST: workspace-default
     depends_on:
       litellm:
         condition: service_healthy
@@ -210,6 +249,7 @@ networks:
   workspaces:
     internal: true
   workspace-egress: {}
+  atlassian: {}
 
 volumes:
   postgres-data: {}

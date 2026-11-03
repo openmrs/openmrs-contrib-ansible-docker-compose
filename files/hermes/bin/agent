@@ -4,7 +4,7 @@
 # With no Hermes arguments it starts an interactive Hermes session, e.g.
 #   bin/agent default
 #   bin/agent default config get memory
-#   bin/agent default mcp test rovo_read
+#   bin/agent default mcp test atlassian_read
 #
 # The image's `hermes` drops to the agent's user, so files it writes stay readable by the agent.
 # Works with Docker or Podman (see bin/compose.sh).
