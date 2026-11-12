@@ -1,0 +1,214 @@
+services:
+  gateway:
+    image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly-chartsearch}
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "${GATEWAY_PORT:-8889}:80"
+
+  frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:${TAG:-nightly-chartsearch}
+    restart: always
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_DEFAULT_LOCALE:
+
+  backend:
+    image: openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
+      OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY: ${OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY:-}
+      OMRS_EXTRA_CHARTSEARCHAI_HUB_APIKEY: ${CHARTSEARCH_HUB_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health/started"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+      start_period: 900s
+    volumes:
+      - openmrs-data:/openmrs/data
+
+  db:
+    image: mariadb:10.11
+    restart: always
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mariadb", "--user=${OMRS_DB_USER:-openmrs}", "--password=${OMRS_DB_PASSWORD:-openmrs}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: ${OMRS_DB_USER:-openmrs}
+      MYSQL_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
+    volumes:
+      - db-data:/var/lib/mysql
+
+  # Ensure the shared model volume is writable by med-agent-hub (uid/gid 65532)
+  # before llama-router mounts it read-only.
+  models-init:
+    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    user: "0:0"
+    entrypoint: ["chown", "-R", "65532:65532", "/app/models"]
+    volumes:
+      - llm-models:/app/models
+    healthcheck:
+      disable: true
+
+  llama-router:
+    image: ghcr.io/ggml-org/llama.cpp@sha256:6bc9134e3278a0ecab23d7ef2f6a46b4595740014fe9bc2f67e8ba7dca8395b4
+    restart: always
+    depends_on:
+      models-init:
+        condition: service_completed_successfully
+    environment:
+      HF_HOME: /tmp/empty-hf
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8077"
+      - --models-preset
+      - /config/llama-router.ini
+      - --models-max
+      - "${LLAMA_ROUTER_MODELS_MAX:-2}"
+      - --jinja
+    volumes:
+      - ./router/llama-router.ini:/config/llama-router.ini:ro
+      - llm-models:/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8077/v1/models"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  med-agent-hub:
+    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    restart: always
+    depends_on:
+      models-init:
+        condition: service_completed_successfully
+      llama-router:
+        condition: service_healthy
+    environment:
+      HUB_API_KEY: ${CHARTSEARCH_HUB_API_KEY:-}
+      LLM_PROVIDER: ${MED_AGENT_LLM_PROVIDER:-openai-compatible}
+      LLM_BASE_URL: ${MED_AGENT_LLM_BASE_URL:-http://llama-router:8077}
+      LLM_API_KEY: ${MED_AGENT_LLM_API_KEY:-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      LLM_MODEL_MAP: ${MED_AGENT_LLM_MODEL_MAP:-}
+      LLM_TOKENIZER_MODE: ${MED_AGENT_TOKENIZER_MODE:-auto}
+      LLM_TEMPERATURE: ${MED_AGENT_TEMPERATURE:-0.0}
+      LLAMA_MODEL_DIR: /app/models
+      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-e4b}
+      HUB_TIMEZONE: ${HUB_TIMEZONE:-UTC}
+      QUERYSTORE_BASE_URL: ${QUERYSTORE_BASE_URL:-http://backend:8080/openmrs}
+      QUERYSTORE_USERNAME: ${QUERYSTORE_USERNAME:-med-agent-hub}
+      QUERYSTORE_PASSWORD: ${QUERYSTORE_PASSWORD:-}
+    volumes:
+      - llm-models:/app/models
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  hub-config-init:
+    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    depends_on:
+      backend:
+        condition: service_healthy
+      med-agent-hub:
+        condition: service_healthy
+    entrypoint: ["python", "/config/configure-openmrs.py"]
+    environment:
+      OMRS_BASE_URL: http://backend:8080/openmrs
+      OMRS_ADMIN_USER: ${OMRS_ADMIN_USER:-admin}
+      OMRS_ADMIN_PASSWORD: ${OMRS_ADMIN_PASSWORD:-Admin123}
+      QUERYSTORE_USERNAME: ${QUERYSTORE_USERNAME:-med-agent-hub}
+      QUERYSTORE_PASSWORD: ${QUERYSTORE_PASSWORD:-}
+      CHARTSEARCH_HUB_ENDPOINT_URL: ${CHARTSEARCH_HUB_ENDPOINT_URL:-http://med-agent-hub:8080/v1/chat/completions}
+      CHARTSEARCH_PROVIDERS_ENABLED: ${CHARTSEARCH_PROVIDERS_ENABLED:-bundled,hub}
+      CHARTSEARCH_PROVIDERS_DEFAULT: ${CHARTSEARCH_PROVIDERS_DEFAULT:-hub}
+      HUB_BASE_URL: http://med-agent-hub:8080
+      CHARTSEARCH_HUB_API_KEY: ${CHARTSEARCH_HUB_API_KEY:-}
+    volumes:
+      - ./config/configure-openmrs.py:/config/configure-openmrs.py:ro
+    healthcheck:
+      disable: true
+
+  # Grafana monitoring stack
+  monitoring-init:
+    image: openmrs/openmrs-reference-application-3-monitoring-init:dev3
+    volumes:
+      - loki-data:/loki/data
+      - loki-config:/etc/loki
+      - alloy-config:/etc/alloy
+      - grafana-provisioning:/etc/grafana/provisioning
+
+  loki:
+    image: grafana/loki:3.6
+    restart: always
+    volumes:
+      - loki-config:/etc/loki
+      - loki-data:/loki/data
+    command: -config.file=/etc/loki/local-config.yaml
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  alloy:
+    image: grafana/alloy:v1.13.1
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - alloy-config:/etc/alloy
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
+
+  grafana:
+    image: grafana/grafana:12.3
+    restart: always
+    environment:
+      GF_LOG_LEVEL: warn
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-Admin123}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/json/logs-dashboard.json
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - grafana-provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_started
+      monitoring-init:
+        condition: service_completed_successfully
+
+volumes:
+  openmrs-data: ~
+  db-data: ~
+  llm-models: ~
+  grafana-data: ~
+  loki-data: ~
+  loki-config: ~
+  alloy-config: ~
+  grafana-provisioning: ~
