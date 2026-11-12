@@ -61,10 +61,22 @@ case "$MODE" in
       exit 1
     fi
 
+    APP_DB_USER="${OMRS_DB_USER:-openmrs}"
+    SAFE_USER="$(printf '%s' "$APP_DB_USER" | tr -cd 'A-Za-z0-9_.-')"
+    if [ "$SAFE_USER" != "$APP_DB_USER" ] || [ -z "$SAFE_USER" ]; then
+      echo "[hiv-db] ERROR: unsafe database user '$APP_DB_USER'" >&2
+      exit 1
+    fi
+    ESCAPED_USER="$(sql_escape "$APP_DB_USER")"
+
     echo "[hiv-db] Recreating database $DB_NAME and importing $DUMP_FILE..."
-    run_mariadb -e \
-      "DROP DATABASE IF EXISTS \`${DB_NAME}\`; CREATE DATABASE \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-    gzip -dc "$DUMP_FILE" | run_mariadb "$DB_NAME"
+    run_mariadb -e "
+      DROP DATABASE IF EXISTS \`${DB_NAME}\`;
+      CREATE DATABASE \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+      GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${ESCAPED_USER}'@'%';
+      FLUSH PRIVILEGES;
+    "
+    gzip -dc "$DUMP_FILE" | run_mariadb --default-character-set=utf8mb4 "$DB_NAME"
 
     ESCAPED_IMAGE="$(sql_escape "$BASELINE_IMAGE")"
     run_mariadb "$DB_NAME" -e "

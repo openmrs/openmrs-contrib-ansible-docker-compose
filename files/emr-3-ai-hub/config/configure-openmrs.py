@@ -84,6 +84,8 @@ class OpenMrsClient:
         method: str,
         path: str,
         payload: dict[str, Any] | None = None,
+        *,
+        timeout: int = 30,
     ) -> Any:
         data = None
         headers = dict(self.headers)
@@ -97,7 +99,7 @@ class OpenMrsClient:
             method=method,
         )
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 body = resp.read()
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")
@@ -327,7 +329,7 @@ def verify_querystore_index(
     sample_patient_uuid: str,
     timeout_seconds: int = 600,
 ) -> dict[str, Any]:
-    admin_client.request("POST", "searchindexupdate", {})
+    admin_client.request("POST", "searchindexupdate", {}, timeout=1800)
 
     deadline = time.monotonic() + timeout_seconds
     status_payload: dict[str, Any] = {}

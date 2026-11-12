@@ -254,9 +254,9 @@ def clear_directory_contents(directory: Path) -> None:
 
 def extract_baseline_layers(
     registry_base_url: str,
+    token_url: str,
     repo: str,
     manifest: dict[str, Any],
-    auth_headers: dict[str, str],
     *,
     need_db: bool,
     need_es: bool,
@@ -264,18 +264,22 @@ def extract_baseline_layers(
     snapshot_dir: Path,
 ) -> dict[str, Any]:
     parsed_manifest: dict[str, Any] = {}
+    es_snapshot_root = snapshot_dir / "es-snapshot"
     if need_es:
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         clear_directory_contents(snapshot_dir)
+        es_snapshot_root.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory(prefix="hiv-layer-") as tmp_root:
+    with tempfile.TemporaryDirectory(prefix="hiv-layer-", dir=staging_dir) as tmp_root:
         tmp_dir = Path(tmp_root)
         for idx, layer in enumerate(manifest.get("layers", [])):
+            token = fetch_registry_token(token_url, repo)
+            auth_headers = {"Authorization": f"Bearer {token}"} if token else {}
             digest = layer["digest"]
             blob_url = f"{registry_base_url}/v2/{repo}/blobs/{digest}"
             blob_path = tmp_dir / f"layer-{idx}.tar.gz"
             log(f"Downloading baseline layer {idx + 1}/{len(manifest['layers'])} ({digest[:19]}...)")
-            http_download(blob_url, blob_path, headers=auth_headers, expected_sha256=digest)
+            http_download(blob_url, blob_path, headers=auth_headers, expected_sha256=digest, timeout=1800)
 
             with tarfile.open(blob_path, "r:*") as archive:
                 for member in archive.getmembers():
@@ -295,7 +299,7 @@ def extract_baseline_layers(
                         rel_snap = safe_relpath(member.name, "baseline/es-snapshot")
                         if rel_snap is None or rel_snap == Path("."):
                             continue
-                        target = snapshot_dir / rel_snap
+                        target = es_snapshot_root / rel_snap
                         if member.isdir():
                             target.mkdir(parents=True, exist_ok=True)
                         elif member.isfile():
@@ -310,6 +314,10 @@ def extract_baseline_layers(
 
 
 def check_es_indices(es_url: str, expected_indices: dict[str, int]) -> tuple[bool, dict[str, int]]:
+    status, _ = http_request(f"{es_url}/querystore_*/_refresh", method="POST", timeout=30)
+    if status == 404:
+        return True, {index_name: 0 for index_name in expected_indices}
+
     counts: dict[str, int] = {}
     need_es = False
     for index_name, min_docs in expected_indices.items():
@@ -333,18 +341,21 @@ def restore_es_snapshot(
     log("Waiting for Elasticsearch cluster health before snapshot restore...")
     http_request(f"{es_url}/_cluster/health?wait_for_status=yellow&timeout=60s", timeout=75)
 
-    log("Registering filesystem snapshot repository hiv_baseline at /snapshots...")
+    log("Registering filesystem snapshot repository hiv_baseline at /snapshots/es-snapshot...")
     http_request(
-        f"{es_url}/_snapshot/hiv_baseline",
+        f"{es_url}/_snapshot/hiv_baseline?verify=false",
         method="PUT",
-        json_body={"type": "fs", "settings": {"location": "/snapshots"}},
+        json_body={
+            "type": "fs",
+            "settings": {"location": "/snapshots/es-snapshot", "readonly": True},
+        },
         timeout=30,
     )
 
     _, snaps_raw = http_request(f"{es_url}/_snapshot/hiv_baseline/_all", timeout=30)
     snapshots = json.loads(snaps_raw.decode("utf-8")).get("snapshots", [])
     if not snapshots:
-        raise RuntimeError("No snapshots found in /snapshots repository hiv_baseline")
+        raise RuntimeError("No snapshots found in /snapshots/es-snapshot repository hiv_baseline")
     snapshot_name = snapshots[0]["snapshot"]
 
     log("Clearing any partial querystore_* indices prior to restore...")
@@ -355,7 +366,7 @@ def restore_es_snapshot(
     )
 
     log(f"Restoring Elasticsearch snapshot {snapshot_name} (querystore_*)...")
-    http_request(
+    _, restore_raw = http_request(
         f"{es_url}/_snapshot/hiv_baseline/{urllib.parse.quote(snapshot_name)}/_restore"
         "?wait_for_completion=true",
         method="POST",
@@ -363,9 +374,13 @@ def restore_es_snapshot(
             "indices": "querystore_*",
             "ignore_unavailable": False,
             "include_global_state": False,
+            "include_aliases": True,
         },
-        timeout=600,
+        timeout=1800,
     )
+    restored = json.loads(restore_raw.decode("utf-8")) if restore_raw else {}
+    if restored.get("snapshot", {}).get("shards", {}).get("failed", 0) != 0:
+        raise RuntimeError(f"Elasticsearch snapshot restore reported failed shards: {restored!r}")
 
     http_request(
         f"{es_url}/_cluster/health/querystore_*?wait_for_status=yellow&timeout=120s",
@@ -377,6 +392,8 @@ def restore_es_snapshot(
         raise RuntimeError(
             f"Restored Elasticsearch indices below expected counts: {counts} vs {expected_indices}"
         )
+
+    http_request(f"{es_url}/_snapshot/hiv_baseline", method="DELETE", timeout=30)
     total_docs = sum(counts.values())
     log(f"Verified {len(counts)} QueryStore indices restored ({total_docs} documents)")
 
@@ -465,9 +482,9 @@ def main() -> int:
         oci_manifest = fetch_oci_manifest(registry_base, repo, reference, auth_headers)
         parsed_manifest = extract_baseline_layers(
             registry_base,
+            token_url,
             repo,
             oci_manifest,
-            auth_headers,
             need_db=need_db,
             need_es=need_es,
             staging_dir=staging_dir,

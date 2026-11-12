@@ -121,6 +121,7 @@ services:
     environment:
       DB_HOST: db
       OMRS_DB_NAME: openmrs
+      OMRS_DB_USER: ${OMRS_DB_USER:-openmrs}
       RESTORE_DB_USER: root
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
       OMRS_DB_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}

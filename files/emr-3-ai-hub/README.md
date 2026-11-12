@@ -20,7 +20,7 @@ OpenMRS Reference Application 3 (`nightly-chartsearch`) with **QueryStore on Ela
 ## Configuration & Secrets
 
 1. Copy `env.template` to `.env` and fill in strong random values for all `CHANGE_ME_*` variables (`ansible-vault` encrypted in OpenMRS infrastructure). Never commit plaintext `.env` files.
-2. `deploy.env` sets `DESTROY_VOLUMES=false` and `HEALTH_CHECK_TIMEOUT=1200` so the OpenMRS database, Elasticsearch indices, and downloaded GGUF models persist across redeploys without re-downloading.
+2. `deploy.env` sets `DESTROY_VOLUMES=false` and `HEALTH_CHECK_TIMEOUT=2400` so the OpenMRS database, Elasticsearch indices, and downloaded GGUF models persist across redeploys without re-downloading.
 3. Optional research accounts: set `EVALUATION_PASSWORD` in `.env` if you also want `hub-config-init` to provision/reconcile the 7 `eval-*` accounts (`eval-clinical-officer`, `eval-nurse`, `eval-pharmacy`, `eval-counsellor`, `eval-records`, `eval-doctor`, `eval-peer`).
 
 ## Inference Backend Modes
