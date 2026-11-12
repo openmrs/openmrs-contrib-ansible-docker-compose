@@ -22,6 +22,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      hiv-baseline-db:
+        condition: service_completed_successfully
     environment:
       OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
       OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
@@ -30,6 +34,10 @@ services:
       OMRS_CONFIG_CONNECTION_DATABASE: openmrs
       OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
       OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      OMRS_EXTRA_OPTIMIZED_STARTUP: "false"
+      OMRS_EXTRA_QUERYSTORE_BACKEND: elasticsearch
+      OMRS_EXTRA_QUERYSTORE_ELASTICSEARCH_URI: http://elasticsearch:9200
+      CHARTSEARCHAI_DEMO_DUMP_URL: ${CHARTSEARCHAI_DEMO_DUMP_URL:-file:///managed-by-hiv-baseline-init}
       OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY: ${OMRS_EXTRA_CHARTSEARCHAI_LLM_REMOTE_APIKEY:-}
       OMRS_EXTRA_CHARTSEARCHAI_HUB_APIKEY: ${CHARTSEARCH_HUB_API_KEY:-}
     healthcheck:
@@ -40,6 +48,89 @@ services:
       start_period: 900s
     volumes:
       - openmrs-data:/openmrs/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    restart: always
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: ${ES_JAVA_OPTS:--Xms1g -Xmx1g}
+      path.repo: /snapshots
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 60s
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-snapshots:/snapshots
+
+  hiv-db-probe:
+    image: mariadb:10.11
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/config/restore-hiv-db.sh", "probe"]
+    environment:
+      DB_HOST: db
+      OMRS_DB_NAME: openmrs
+      RESTORE_DB_USER: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
+      OMRS_DB_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      HIV_BASELINE_ENABLED: ${HIV_BASELINE_ENABLED:-true}
+    volumes:
+      - ./config/restore-hiv-db.sh:/config/restore-hiv-db.sh:ro
+      - baseline-staging:/staging
+    healthcheck:
+      disable: true
+
+  hiv-baseline-stage:
+    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    user: "0:0"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      hiv-db-probe:
+        condition: service_completed_successfully
+    entrypoint: ["python", "/config/restore-hiv-baseline.py"]
+    environment:
+      HIV_BASELINE_ENABLED: ${HIV_BASELINE_ENABLED:-true}
+      HIV_BASELINE_IMAGE: ${HIV_BASELINE_IMAGE:-ghcr.io/pmanko/openclinai-hiv-baseline@sha256:6d828211831ef5bf1d37955bf024bc422383a63b9af728d1fa40e4c1acbd5394}
+      ES_URL: http://elasticsearch:9200
+      STAGING_DIR: /staging
+      SNAPSHOT_DIR: /snapshots
+      OPENMRS_DATA_DIR: /openmrs/data
+    volumes:
+      - ./config/restore-hiv-baseline.py:/config/restore-hiv-baseline.py:ro
+      - baseline-staging:/staging
+      - es-snapshots:/snapshots
+      - openmrs-data:/openmrs/data
+    healthcheck:
+      disable: true
+
+  hiv-baseline-db:
+    image: mariadb:10.11
+    depends_on:
+      db:
+        condition: service_healthy
+      hiv-baseline-stage:
+        condition: service_completed_successfully
+    entrypoint: ["/bin/sh", "/config/restore-hiv-db.sh", "restore"]
+    environment:
+      DB_HOST: db
+      OMRS_DB_NAME: openmrs
+      RESTORE_DB_USER: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
+      OMRS_DB_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+      HIV_BASELINE_ENABLED: ${HIV_BASELINE_ENABLED:-true}
+      HIV_BASELINE_IMAGE: ${HIV_BASELINE_IMAGE:-ghcr.io/pmanko/openclinai-hiv-baseline@sha256:6d828211831ef5bf1d37955bf024bc422383a63b9af728d1fa40e4c1acbd5394}
+    volumes:
+      - ./config/restore-hiv-db.sh:/config/restore-hiv-db.sh:ro
+      - baseline-staging:/staging
+    healthcheck:
+      disable: true
 
   db:
     image: mariadb:10.11
@@ -116,7 +207,8 @@ services:
       LLM_TOKENIZER_MODE: ${MED_AGENT_TOKENIZER_MODE:-auto}
       LLM_TEMPERATURE: ${MED_AGENT_TEMPERATURE:-0.0}
       LLAMA_MODEL_DIR: /app/models
-      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-e4b}
+      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b}
+      HUB_ANCHOR: ${HUB_ANCHOR:-}
       HUB_TIMEZONE: ${HUB_TIMEZONE:-UTC}
       QUERYSTORE_BASE_URL: ${QUERYSTORE_BASE_URL:-http://backend:8080/openmrs}
       QUERYSTORE_USERNAME: ${QUERYSTORE_USERNAME:-med-agent-hub}
@@ -147,8 +239,16 @@ services:
       CHARTSEARCH_HUB_ENDPOINT_URL: ${CHARTSEARCH_HUB_ENDPOINT_URL:-http://med-agent-hub:8080/v1/chat/completions}
       CHARTSEARCH_PROVIDERS_ENABLED: ${CHARTSEARCH_PROVIDERS_ENABLED:-bundled,hub}
       CHARTSEARCH_PROVIDERS_DEFAULT: ${CHARTSEARCH_PROVIDERS_DEFAULT:-hub}
+      CHARTSEARCH_BUNDLED_ENGINE: ${CHARTSEARCH_BUNDLED_ENGINE:-remote}
+      CHARTSEARCH_BUNDLED_ENDPOINT_URL: ${CHARTSEARCH_BUNDLED_ENDPOINT_URL:-http://llama-router:8077/v1/chat/completions}
+      CHARTSEARCH_BUNDLED_MODEL_NAME: ${CHARTSEARCH_BUNDLED_MODEL_NAME:-gemma-4-12b}
+      CHARTSEARCHAI_REFERENCE_DATE: ${CHARTSEARCHAI_REFERENCE_DATE:-}
       HUB_BASE_URL: http://med-agent-hub:8080
       CHARTSEARCH_HUB_API_KEY: ${CHARTSEARCH_HUB_API_KEY:-}
+      EVALUATION_PASSWORD: ${EVALUATION_PASSWORD:-}
+      HIV_BASELINE_ENABLED: ${HIV_BASELINE_ENABLED:-true}
+      VERIFY_SAMPLE_PATIENT_UUID: ${VERIFY_SAMPLE_PATIENT_UUID:-}
+      QUERYSTORE_INDEX_TIMEOUT_SECONDS: ${QUERYSTORE_INDEX_TIMEOUT_SECONDS:-600}
     volumes:
       - ./config/configure-openmrs.py:/config/configure-openmrs.py:ro
     healthcheck:
@@ -206,6 +306,9 @@ services:
 volumes:
   openmrs-data: ~
   db-data: ~
+  es-data: ~
+  es-snapshots: ~
+  baseline-staging: ~
   llm-models: ~
   grafana-data: ~
   loki-data: ~

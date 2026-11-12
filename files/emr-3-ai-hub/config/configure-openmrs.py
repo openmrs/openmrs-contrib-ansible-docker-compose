@@ -2,13 +2,16 @@
 """Configure OpenMRS for ChartSearchAI + med-agent-hub on stack startup.
 
 Idempotently:
-1. Waits for the OpenMRS REST API to accept admin credentials.
+1. Waits for OpenMRS REST API to accept admin credentials and verifies
+   querystore and chartsearchai modules are started.
 2. Reconciles the least-privileged QueryStore service role and account
    holding the exact 10 OpenMRS Core read privileges required by QueryStore.
 3. Configures ChartSearchAI Global Properties so the module routes clinical
-   answer requests through med-agent-hub while keeping bundled inference
-   registered.
-4. Verifies med-agent-hub's /v1/models endpoint responds cleanly.
+   answer requests through med-agent-hub while wiring bundled inference to
+   the shared llama-router and clearing stale chartMode overrides.
+4. Verifies QueryStore indexing completeness and patient record reads under
+   the med-agent-hub service account, optionally reconciles eval-* research
+   accounts, and checks med-agent-hub's /v1/models endpoint.
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ from typing import Any
 
 ROLE_NAME = "Med Agent Hub Patient Reader"
 DEFAULT_SERVICE_USERNAME = "med-agent-hub"
+DEFAULT_SAMPLE_PATIENT_UUID = "dd75c020-1691-11df-97a5-7038c432aabf"
 CORE_READ_PRIVILEGES: tuple[str, ...] = (
     "Get Patients",
     "Get Observations",
@@ -37,6 +41,32 @@ CORE_READ_PRIVILEGES: tuple[str, ...] = (
     "Get Orders",
     "Get Patient Programs",
     "Get Medication Dispense",
+)
+EVAL_ACCESS_ROLE = "Application: Uses ChartSearchAI (Research)"
+EVAL_REQUIRED_PRIVILEGES: tuple[str, ...] = (
+    "AI Query Patient Data",
+    "Get Patients",
+    "Get People",
+    "Get Concept Sources",
+    "Get Care Settings",
+    "Get Observations",
+    "Get Encounters",
+    "Get Visits",
+    "Get Conditions",
+    "Get Diagnoses",
+    "Get Allergies",
+    "Get Orders",
+    "Get Patient Programs",
+    "Get Medication Dispense",
+)
+EVAL_ACCOUNTS: tuple[tuple[str, str, bool], ...] = (
+    ("eval-clinical-officer", "Organizational: Clinical Officer", False),
+    ("eval-nurse", "Organizational: Nurse", True),
+    ("eval-pharmacy", "Organizational: Pharmaceutical Technologist", False),
+    ("eval-counsellor", "Organizational: Adherence Counsellor", False),
+    ("eval-records", "Organizational: Health Records Officer", False),
+    ("eval-doctor", "Organizational: Doctor", True),
+    ("eval-peer", "Organizational: Peer Educator", False),
 )
 
 
@@ -237,6 +267,38 @@ def reconcile_querystore_account(
     }
 
 
+def require_modules_started(
+    client: OpenMrsClient,
+    required_modules: tuple[str, ...] = ("querystore", "chartsearchai"),
+) -> dict[str, bool]:
+    payload = client.request(
+        "GET",
+        "module?v=custom:(uuid,name,packageName,started,startupErrorMessage)&limit=100",
+    )
+    by_key: dict[str, dict[str, Any]] = {}
+    for mod in payload.get("results", []):
+        for key in (mod.get("uuid"), mod.get("name")):
+            if key:
+                by_key[str(key).strip().lower()] = mod
+
+    statuses: dict[str, bool] = {}
+    failures: list[str] = []
+    for mod_id in required_modules:
+        mod = by_key.get(mod_id.lower())
+        if mod is None:
+            failures.append(f"{mod_id}: missing from /ws/rest/v1/module")
+            continue
+        started = bool(mod.get("started"))
+        statuses[mod_id] = started
+        if not started:
+            err = mod.get("startupErrorMessage") or "not started"
+            failures.append(f"{mod_id}: {err}")
+
+    if failures:
+        raise RuntimeError("Required OpenMRS modules failed startup: " + "; ".join(failures))
+    return statuses
+
+
 def set_global_property(client: OpenMrsClient, name: str, value: str) -> None:
     encoded = urllib.parse.quote(name, safe="")
     try:
@@ -245,6 +307,137 @@ def set_global_property(client: OpenMrsClient, name: str, value: str) -> None:
         if "HTTP 404" not in str(exc):
             raise
         client.request("POST", "systemsetting", {"property": name, "value": value})
+
+
+def delete_global_property(client: OpenMrsClient, name: str) -> bool:
+    encoded = urllib.parse.quote(name, safe="")
+    try:
+        client.request("DELETE", f"systemsetting/{encoded}?purge=true")
+        return True
+    except RuntimeError as exc:
+        if "HTTP 404" in str(exc):
+            return False
+        raise
+
+
+def verify_querystore_index(
+    admin_client: OpenMrsClient,
+    service_client: OpenMrsClient,
+    *,
+    sample_patient_uuid: str,
+    timeout_seconds: int = 600,
+) -> dict[str, Any]:
+    admin_client.request("POST", "searchindexupdate", {})
+
+    deadline = time.monotonic() + timeout_seconds
+    status_payload: dict[str, Any] = {}
+    while True:
+        status_payload = admin_client.request("GET", "querystore/indexingstatus")
+        if status_payload.get("complete") is True:
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError(
+                f"Timed out waiting for QueryStore indexing completion: {status_payload!r}"
+            )
+        time.sleep(3)
+
+    sample_keys: list[str] = []
+    if sample_patient_uuid:
+        record = service_client.request("GET", f"querystore/patientrecord/{sample_patient_uuid}")
+        if not isinstance(record, dict) or not record:
+            raise RuntimeError(
+                f"QueryStore patientrecord/{sample_patient_uuid} returned empty response"
+            )
+        sample_keys = sorted(str(key) for key in record.keys())
+
+    return {
+        "complete": True,
+        "sample_patient_uuid": sample_patient_uuid or None,
+        "sample_patient_keys": sample_keys,
+    }
+
+
+def reconcile_evaluation_accounts(
+    client: OpenMrsClient,
+    *,
+    omrs_base_url: str,
+    eval_password: str,
+) -> list[str]:
+    privilege_uuids: list[str] = []
+    for name in EVAL_REQUIRED_PRIVILEGES:
+        priv = client.exact("privilege", "name", name)
+        if priv is None or not priv.get("uuid"):
+            raise RuntimeError(f"Required evaluation privilege is missing: {name}")
+        privilege_uuids.append(str(priv["uuid"]))
+
+    access_role = client.exact("role", "name", EVAL_ACCESS_ROLE)
+    if access_role is None:
+        access_role = client.request(
+            "POST",
+            "role",
+            {
+                "name": EVAL_ACCESS_ROLE,
+                "description": "ChartSearchAI access for synthetic-data research.",
+                "privileges": privilege_uuids,
+                "inheritedRoles": [],
+            },
+        )
+    else:
+        current_privs = {str(item.get("uuid")) for item in access_role.get("privileges", [])}
+        if current_privs != set(privilege_uuids) or access_role.get("inheritedRoles"):
+            client.request(
+                "POST",
+                f"role/{access_role['uuid']}",
+                {"privileges": privilege_uuids, "inheritedRoles": []},
+            )
+
+    provisioned: list[str] = []
+    for username, role_name, require_existing in EVAL_ACCOUNTS:
+        occ_role = client.exact("role", "name", role_name)
+        if occ_role is None:
+            if require_existing:
+                raise RuntimeError(f"Required OpenMRS role is missing: {role_name}")
+            occ_role = client.request(
+                "POST",
+                "role",
+                {
+                    "name": role_name,
+                    "description": "Occupational label for synthetic-data research.",
+                    "privileges": [],
+                    "inheritedRoles": [],
+                },
+            )
+
+        desired_roles = [str(occ_role["uuid"]), str(access_role["uuid"])]
+        user = client.exact("user", "username", username)
+        if user is None:
+            user = client.request(
+                "POST",
+                "user",
+                {
+                    "username": username,
+                    "systemId": username,
+                    "password": eval_password,
+                    "roles": desired_roles,
+                    "person": {
+                        "names": [{"givenName": "Evaluation", "familyName": username[5:]}],
+                        "gender": "U",
+                    },
+                },
+            )
+        else:
+            client.request(
+                "POST",
+                f"user/{user['uuid']}",
+                {"password": eval_password, "roles": desired_roles},
+            )
+
+        session = OpenMrsClient(omrs_base_url, username, eval_password).request("GET", "session")
+        if not session.get("authenticated") or (session.get("user") or {}).get("uuid") != user["uuid"]:
+            raise RuntimeError(f"Verified login failed for evaluation account {username}")
+        provisioned.append(username)
+
+    return provisioned
 
 
 def verify_hub_models(hub_base_url: str, hub_api_key: str) -> int:
@@ -276,8 +469,31 @@ def main() -> int:
     ).strip()
     providers_enabled = os.environ.get("CHARTSEARCH_PROVIDERS_ENABLED", "bundled,hub").strip()
     providers_default = os.environ.get("CHARTSEARCH_PROVIDERS_DEFAULT", "hub").strip()
+    bundled_engine = os.environ.get("CHARTSEARCH_BUNDLED_ENGINE", "remote").strip()
+    bundled_endpoint_url = os.environ.get(
+        "CHARTSEARCH_BUNDLED_ENDPOINT_URL", "http://llama-router:8077/v1/chat/completions"
+    ).strip()
+    bundled_model_name = os.environ.get("CHARTSEARCH_BUNDLED_MODEL_NAME", "gemma-4-12b").strip()
+    reference_date = os.environ.get("CHARTSEARCHAI_REFERENCE_DATE", "").strip()
     hub_base_url = os.environ.get("HUB_BASE_URL", "http://med-agent-hub:8080").strip()
     hub_api_key = os.environ.get("CHARTSEARCH_HUB_API_KEY", "").strip()
+    eval_password = os.environ.get("EVALUATION_PASSWORD", "").strip()
+    hiv_baseline_enabled = os.environ.get("HIV_BASELINE_ENABLED", "true").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
+    raw_sample_uuid = os.environ.get("VERIFY_SAMPLE_PATIENT_UUID", "").strip()
+    if raw_sample_uuid.lower() in {"none", "off", "false"}:
+        sample_patient_uuid = ""
+    elif raw_sample_uuid:
+        sample_patient_uuid = raw_sample_uuid
+    elif hiv_baseline_enabled:
+        sample_patient_uuid = DEFAULT_SAMPLE_PATIENT_UUID
+    else:
+        sample_patient_uuid = ""
+    index_timeout_seconds = int(os.environ.get("QUERYSTORE_INDEX_TIMEOUT_SECONDS", "600"))
 
     if not service_password.strip():
         print(
@@ -288,27 +504,57 @@ def main() -> int:
 
     client = OpenMrsClient(omrs_base_url, admin_user, admin_password)
     wait_for_openmrs(client)
+    modules = require_modules_started(client)
     account = reconcile_querystore_account(
         client,
         service_username=service_username,
         service_password=service_password,
     )
 
-    properties = {
+    chart_mode_deleted = delete_global_property(client, "chartsearchai.chartMode")
+    properties: dict[str, str] = {
         "chartsearchai.hub.endpointUrl": hub_endpoint_url,
         "chartsearchai.providers.enabled": providers_enabled,
         "chartsearchai.providers.default": providers_default,
+        "chartsearchai.llm.engine": bundled_engine,
     }
+    if bundled_endpoint_url:
+        properties["chartsearchai.llm.remote.endpointUrl"] = bundled_endpoint_url
+    if bundled_model_name:
+        properties["chartsearchai.llm.remote.modelName"] = bundled_model_name
+    if reference_date:
+        properties["chartsearchai.referenceDate"] = reference_date
+
     for prop_name, prop_value in properties.items():
         set_global_property(client, prop_name, prop_value)
+
+    service_client = OpenMrsClient(omrs_base_url, service_username, service_password)
+    querystore_status = verify_querystore_index(
+        client,
+        service_client,
+        sample_patient_uuid=sample_patient_uuid,
+        timeout_seconds=index_timeout_seconds,
+    )
+
+    eval_accounts: list[str] = []
+    if eval_password:
+        eval_accounts = reconcile_evaluation_accounts(
+            client,
+            omrs_base_url=omrs_base_url,
+            eval_password=eval_password,
+        )
 
     profile_count = verify_hub_models(hub_base_url, hub_api_key)
     print(
         json.dumps(
             {
                 "status": "configured",
+                "modules": modules,
                 "account": account,
+                "chart_mode_deleted": chart_mode_deleted,
                 "global_properties": properties,
+                "querystore": querystore_status,
+                "evaluation_accounts": eval_accounts,
                 "hub_profiles_count": profile_count,
             },
             sort_keys=True,
