@@ -88,6 +88,7 @@ services:
 
   hiv-baseline-stage:
     image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    platform: linux/amd64
     user: "0:0"
     depends_on:
       elasticsearch:
@@ -154,6 +155,7 @@ services:
   # before llama-router mounts it read-only.
   models-init:
     image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    platform: linux/amd64
     user: "0:0"
     entrypoint: ["chown", "-R", "65532:65532", "/app/models"]
     volumes:
@@ -191,6 +193,7 @@ services:
 
   med-agent-hub:
     image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    platform: linux/amd64
     restart: always
     depends_on:
       models-init:
@@ -225,6 +228,7 @@ services:
 
   hub-config-init:
     image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    platform: linux/amd64
     depends_on:
       backend:
         condition: service_healthy
