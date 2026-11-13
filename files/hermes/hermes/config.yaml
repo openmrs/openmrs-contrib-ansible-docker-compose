@@ -111,3 +111,8 @@ mcp_servers:
     trust: untrusted
     headers:
       x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"
+  onyx_search:
+    url: http://litellm:4000/mcp/onyx_search
+    strict_redirect_headers: true
+    headers:
+      x-litellm-api-key: "Bearer ${LITELLM_API_KEY}"

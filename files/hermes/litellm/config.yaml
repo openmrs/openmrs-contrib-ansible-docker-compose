@@ -33,6 +33,18 @@ model_list:
           role: system
         - location: message
           index: -1
+  # Onyx's model for query expansion and choosing search results; only Onyx's key may use it.
+  # drop_params: Onyx sends temperature=0, which some models (e.g. Claude Haiku 5.5) reject.
+  - model_name: onyx
+    litellm_params:
+      model: os.environ/LLM_MODEL_FAST
+      drop_params: true
+  # Onyx's embedding model for indexing and search; only Onyx's key may use it. Onyx's index is
+  # built for one model, and admin can't yet re-embed it, so pick ONYX_EMBEDDING_MODEL before
+  # indexing anything.
+  - model_name: onyx-embedding
+    litellm_params:
+      model: os.environ/ONYX_EMBEDDING_MODEL
   # Used only by the `auto` router's Jev classifier; agents' keys can't call it. LiteLLM reads
   # TYPESAFE_API_KEY (and TYPESAFE_API_BASE) from the environment.
   - model_name: jev-router
@@ -145,6 +157,17 @@ mcp_servers:
       - confluence_reply_to_comment
       - confluence_add_inline_comment
       - confluence_add_label
+
+  # Onyx's index of public OpenMRS content, through its MCP server. Read-only: search only, not
+  # Onyx's web search or URL fetching. ONYX_SEARCH_PAT is the Onyx search user's token, scoped to
+  # search (`bin/admin onyx token`).
+  onyx_search:
+    url: http://onyx-mcp:8090/
+    transport: http
+    auth_type: bearer_token
+    auth_value: os.environ/ONYX_SEARCH_PAT
+    allowed_tools:
+      - search_indexed_documents
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
