@@ -26,11 +26,11 @@ fi
 
 compose() {
   # shellcheck disable=SC2086 # compose_cmd may be two words ("docker compose")
-  $compose_cmd --project-directory "$root" -f "$root/compose.yml" "$@"
+  $compose_cmd --project-directory "$root" -f "$root/compose.yaml" "$@"
 }
 
 # Compose allocates a TTY by default; -T is needed when input or output is redirected, so piped
-# stdin reaches the command and stdout stays separate from stderr.
-tty_flag() {
-  if [ -t 0 ] && [ -t 1 ]; then :; else echo "-T"; fi
-}
+# stdin reaches the command and stdout stays separate from stderr. Checked here rather than in a
+# function, since a function called as $(...) always sees a pipe on stdout.
+# shellcheck disable=SC2034 # used by bin/admin and bin/agent
+if [ -t 0 ] && [ -t 1 ]; then tty_flag=""; else tty_flag="-T"; fi

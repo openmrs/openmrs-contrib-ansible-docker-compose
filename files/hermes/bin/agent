@@ -20,5 +20,5 @@ fi
 name="$1"
 shift
 
-# shellcheck disable=SC2046 # tty_flag prints nothing or a single flag
-compose exec $(tty_flag) "agent-$name" hermes "$@"
+# shellcheck disable=SC2086 # tty_flag is empty or a single flag
+compose exec $tty_flag "agent-$name" hermes "$@"

@@ -12,5 +12,5 @@ set -euo pipefail
 # shellcheck source-path=SCRIPTDIR source=compose.sh
 . "$(dirname "$0")/compose.sh"
 
-# shellcheck disable=SC2046 # tty_flag prints nothing or a single flag
-compose run --rm $(tty_flag) admin "$@"
+# shellcheck disable=SC2086 # tty_flag is empty or a single flag
+compose run --rm $tty_flag admin "$@"
