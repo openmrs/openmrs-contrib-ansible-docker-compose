@@ -48,6 +48,7 @@ services:
       start_period: 900s
     volumes:
       - openmrs-data:/openmrs/data
+      - ./config/backend-init.sh:/usr/local/bin/backend-init.sh:ro
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4

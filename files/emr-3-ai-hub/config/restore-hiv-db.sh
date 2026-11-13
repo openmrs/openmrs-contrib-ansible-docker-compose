@@ -78,24 +78,35 @@ case "$MODE" in
     "
     gzip -dc "$DUMP_FILE" | run_mariadb --default-character-set=utf8mb4 "$DB_NAME"
 
+    OUTBOX_CHANGESET="20260519-create-outbox-event-table"
+    OUTBOX_TABLE="$(run_mariadb -Nse "
+      SELECT COUNT(*) FROM information_schema.tables
+      WHERE table_schema = DATABASE() AND table_name = 'outbox_event';" "$DB_NAME" || echo 0)"
+    if [ "$OUTBOX_TABLE" = "1" ]; then
+      OUTBOX_ROWS="$(run_mariadb -Nse "SELECT COUNT(*) FROM outbox_event;" "$DB_NAME" || echo 0)"
+      if [ "$OUTBOX_ROWS" != "0" ]; then
+        echo "[hiv-db] ERROR: outbox_event holds ${OUTBOX_ROWS} rows for changeset ${OUTBOX_CHANGESET}; migrate explicitly" >&2
+        exit 1
+      fi
+      echo "[hiv-db] Dropping empty outbox_event table so Core Liquibase recreates it cleanly..."
+      run_mariadb "$DB_NAME" -e "
+        DROP TABLE outbox_event;
+        DELETE FROM liquibasechangelog WHERE ID = '${OUTBOX_CHANGESET}' AND AUTHOR = 'rkorytkowski';
+      "
+    fi
+
     ESCAPED_IMAGE="$(sql_escape "$BASELINE_IMAGE")"
     run_mariadb "$DB_NAME" -e "
       INSERT INTO global_property (property, property_value, description, uuid)
-      VALUES (
-        'openclinai.hivBaseline.image',
-        '${ESCAPED_IMAGE}',
-        'Loaded OpenClinAI HIV baseline OCI artifact reference',
-        UUID()
-      )
-      ON DUPLICATE KEY UPDATE property_value = VALUES(property_value);
-
-      INSERT INTO global_property (property, property_value, description, uuid)
-      VALUES (
-        'chartsearchai.demo.seededDataset',
-        'openclinai-hiv-baseline',
-        'Marker preventing demo-seed from overwriting the preloaded HIV baseline',
-        UUID()
-      )
+      VALUES
+        ('openclinai.hivBaseline.image', '${ESCAPED_IMAGE}', 'Loaded OpenClinAI HIV baseline OCI artifact reference', UUID()),
+        ('chartsearchai.demo.seededDataset', '5284-2026-05-19', 'Marker preventing demo-seed from overwriting the preloaded HIV baseline', UUID()),
+        ('referencedemodata.createDemoPatientsOnNextStartup', '0', 'Prevent ReferenceDemoDataActivator from generating synthetic patients over the HIV baseline', UUID()),
+        ('querystore.backend', 'elasticsearch', 'QueryStore CQRS read-store backend', UUID()),
+        ('querystore.embedding.modelFilePath', 'chartsearchai/model.onnx', 'Path relative to OpenMRS app data directory for all-MiniLM-L6-v2 ONNX model', UUID()),
+        ('querystore.embedding.vocabFilePath', 'chartsearchai/vocab.txt', 'Path relative to OpenMRS app data directory for WordPiece vocab', UUID()),
+        ('querystore.bootstrap.autostart', 'true', 'Verify/resume QueryStore bootstrap cursor on startup', UUID()),
+        ('chartsearchai.querystore.enabled', 'true', 'Enable QueryStore retrieval path in ChartSearchAI', UUID())
       ON DUPLICATE KEY UPDATE property_value = VALUES(property_value);
     "
 
