@@ -285,7 +285,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - alloy-config:/etc/alloy
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy
     depends_on:
       monitoring-init:
         condition: service_completed_successfully

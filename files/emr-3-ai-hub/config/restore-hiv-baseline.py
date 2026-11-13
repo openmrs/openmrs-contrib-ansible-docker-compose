@@ -359,11 +359,19 @@ def restore_es_snapshot(
     snapshot_name = snapshots[0]["snapshot"]
 
     log("Clearing any partial querystore_* indices prior to restore...")
-    http_request(
-        f"{es_url}/querystore_*?ignore_unavailable=true",
-        method="DELETE",
-        timeout=60,
+    status, cat_raw = http_request(
+        f"{es_url}/_cat/indices/querystore_*?format=json&h=index&expand_wildcards=all",
+        timeout=30,
     )
+    if status == 200 and cat_raw.strip():
+        for row in json.loads(cat_raw.decode("utf-8")):
+            idx_name = str(row.get("index") or "").strip()
+            if idx_name:
+                http_request(
+                    f"{es_url}/{urllib.parse.quote(idx_name, safe='')}",
+                    method="DELETE",
+                    timeout=60,
+                )
 
     log(f"Restoring Elasticsearch snapshot {snapshot_name} (querystore_*)...")
     _, restore_raw = http_request(
