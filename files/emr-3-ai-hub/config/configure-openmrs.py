@@ -345,10 +345,13 @@ def verify_querystore_index(
 
     sample_keys: list[str] = []
     if sample_patient_uuid:
-        record = service_client.request("GET", f"querystore/patientrecord/{sample_patient_uuid}")
-        if not isinstance(record, dict) or not record:
+        encoded_patient = urllib.parse.quote(sample_patient_uuid, safe="")
+        record = service_client.request(
+            "GET", f"querystore/patientrecord?patient={encoded_patient}&limit=5"
+        )
+        if not isinstance(record, dict) or not record.get("results"):
             raise RuntimeError(
-                f"QueryStore patientrecord/{sample_patient_uuid} returned empty response"
+                f"QueryStore patientrecord?patient={sample_patient_uuid} returned empty results: {record!r}"
             )
         sample_keys = sorted(str(key) for key in record.keys())
 
