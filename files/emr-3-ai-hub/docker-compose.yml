@@ -20,6 +20,8 @@ services:
   backend:
     image: ${BACKEND_IMAGE:-openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}}
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
@@ -90,7 +92,7 @@ services:
 
   hiv-baseline-stage:
     image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
-    platform: linux/amd64
+    platform: ${HUB_PLATFORM:-linux/amd64}
     user: "0:0"
     depends_on:
       elasticsearch:
@@ -157,7 +159,7 @@ services:
   # before llama-router mounts it read-only.
   models-init:
     image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
-    platform: linux/amd64
+    platform: ${HUB_PLATFORM:-linux/amd64}
     user: "0:0"
     entrypoint: ["chown", "-R", "65532:65532", "/app/models"]
     volumes:
@@ -195,8 +197,10 @@ services:
 
   med-agent-hub:
     image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
-    platform: linux/amd64
+    platform: ${HUB_PLATFORM:-linux/amd64}
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       models-init:
         condition: service_completed_successfully
@@ -213,7 +217,7 @@ services:
       LLM_TOKENIZER_MODE: ${MED_AGENT_TOKENIZER_MODE:-auto}
       LLM_TEMPERATURE: ${MED_AGENT_TEMPERATURE:-0.0}
       LLAMA_MODEL_DIR: /app/models
-      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b,qwen3.5-9b}
+      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b,gemma-e4b,qwen3.5-9b}
       HUB_ANCHOR: ${HUB_ANCHOR:-}
       HUB_TIMEZONE: ${HUB_TIMEZONE:-UTC}
       QUERYSTORE_BASE_URL: ${QUERYSTORE_BASE_URL:-http://backend:8080/openmrs}
@@ -230,7 +234,7 @@ services:
 
   hub-config-init:
     image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
-    platform: linux/amd64
+    platform: ${HUB_PLATFORM:-linux/amd64}
     depends_on:
       backend:
         condition: service_healthy
