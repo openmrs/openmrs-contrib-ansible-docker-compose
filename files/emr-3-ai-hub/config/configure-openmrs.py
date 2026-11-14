@@ -69,6 +69,70 @@ EVAL_ACCOUNTS: tuple[tuple[str, str, bool], ...] = (
     ("eval-peer", "Organizational: Peer Educator", False),
 )
 
+DEFAULT_HUB_PRESETS: list[dict[str, Any]] = [
+    {
+        "id": "quick",
+        "label": "Quick answer",
+        "description": "Single fast pass over the chart",
+        "default": False,
+        "model": "gemma-4-12b",
+        "execution": {
+            "mode": "quick",
+            "preset_id": "quick",
+            "checks": {"temporal": "enforce", "confidence": "levels"},
+        },
+    },
+    {
+        "id": "standard",
+        "label": "Standard answer",
+        "description": "Fast answer plus detailed background explanation",
+        "default": True,
+        "model": "gemma-4-12b",
+        "execution": {
+            "mode": "standard",
+            "preset_id": "standard",
+            "checks": {"temporal": "enforce", "confidence": "levels"},
+        },
+    },
+    {
+        "id": "verified",
+        "label": "Cross-checked answer",
+        "description": "Fast answer, detailed view, and independent clinical cross-check",
+        "default": False,
+        "model": "gemma-4-12b",
+        "execution": {
+            "mode": "verified",
+            "preset_id": "verified",
+            "verifier_model": "qwen3.5-9b",
+            "checks": {
+                "temporal": "enforce",
+                "grounding": "folded",
+                "confidence": "levels",
+            },
+        },
+    },
+]
+
+
+def resolve_hub_presets_json(raw_value: str) -> str:
+    stripped = raw_value.strip()
+    if not stripped:
+        return json.dumps(DEFAULT_HUB_PRESETS, separators=(",", ":"))
+    parsed = json.loads(stripped)
+    if not isinstance(parsed, list) or not parsed:
+        raise ValueError("CHARTSEARCH_HUB_PRESETS must be a non-empty JSON array")
+    for entry in parsed:
+        if not isinstance(entry, dict):
+            raise ValueError("Each entry in CHARTSEARCH_HUB_PRESETS must be a JSON object")
+        if not isinstance(entry.get("id"), str) or not entry["id"].strip():
+            raise ValueError("Each CHARTSEARCH_HUB_PRESETS entry requires a non-empty 'id'")
+        if not isinstance(entry.get("model"), str) or not entry["model"].strip():
+            raise ValueError("Each CHARTSEARCH_HUB_PRESETS entry requires a non-empty 'model'")
+        execution = entry.get("execution")
+        if not isinstance(execution, dict) or not isinstance(execution.get("mode"), str) or not execution["mode"].strip():
+            raise ValueError("Each CHARTSEARCH_HUB_PRESETS entry requires an 'execution.mode'")
+    return json.dumps(parsed, separators=(",", ":"))
+
 
 class OpenMrsClient:
     def __init__(self, base_url: str, username: str, password: str) -> None:
@@ -472,6 +536,7 @@ def main() -> int:
     hub_endpoint_url = os.environ.get(
         "CHARTSEARCH_HUB_ENDPOINT_URL", "http://med-agent-hub:8080/v1/chat/completions"
     ).strip()
+    hub_presets_json = resolve_hub_presets_json(os.environ.get("CHARTSEARCH_HUB_PRESETS", ""))
     providers_enabled = os.environ.get("CHARTSEARCH_PROVIDERS_ENABLED", "hub").strip()
     providers_default = os.environ.get("CHARTSEARCH_PROVIDERS_DEFAULT", "hub").strip()
     bundled_engine = os.environ.get("CHARTSEARCH_BUNDLED_ENGINE", "remote").strip()
@@ -519,6 +584,7 @@ def main() -> int:
     chart_mode_deleted = delete_global_property(client, "chartsearchai.chartMode")
     properties: dict[str, str] = {
         "chartsearchai.hub.endpointUrl": hub_endpoint_url,
+        "chartsearchai.hub.presets": hub_presets_json,
         "chartsearchai.providers.enabled": providers_enabled,
         "chartsearchai.providers.default": providers_default,
         "chartsearchai.llm.engine": bundled_engine,

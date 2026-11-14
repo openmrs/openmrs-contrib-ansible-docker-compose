@@ -89,7 +89,7 @@ services:
       disable: true
 
   hiv-baseline-stage:
-    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
     platform: linux/amd64
     user: "0:0"
     depends_on:
@@ -156,7 +156,7 @@ services:
   # Ensure the shared model volume is writable by med-agent-hub (uid/gid 65532)
   # before llama-router mounts it read-only.
   models-init:
-    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
     platform: linux/amd64
     user: "0:0"
     entrypoint: ["chown", "-R", "65532:65532", "/app/models"]
@@ -194,7 +194,7 @@ services:
       start_period: 30s
 
   med-agent-hub:
-    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
     platform: linux/amd64
     restart: always
     depends_on:
@@ -213,7 +213,7 @@ services:
       LLM_TOKENIZER_MODE: ${MED_AGENT_TOKENIZER_MODE:-auto}
       LLM_TEMPERATURE: ${MED_AGENT_TEMPERATURE:-0.0}
       LLAMA_MODEL_DIR: /app/models
-      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b}
+      MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b,qwen3.5-9b}
       HUB_ANCHOR: ${HUB_ANCHOR:-}
       HUB_TIMEZONE: ${HUB_TIMEZONE:-UTC}
       QUERYSTORE_BASE_URL: ${QUERYSTORE_BASE_URL:-http://backend:8080/openmrs}
@@ -226,10 +226,10 @@ services:
       interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 600s
 
   hub-config-init:
-    image: ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}
+    image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
     platform: linux/amd64
     depends_on:
       backend:
@@ -244,6 +244,7 @@ services:
       QUERYSTORE_USERNAME: ${QUERYSTORE_USERNAME:-med-agent-hub}
       QUERYSTORE_PASSWORD: ${QUERYSTORE_PASSWORD:-}
       CHARTSEARCH_HUB_ENDPOINT_URL: ${CHARTSEARCH_HUB_ENDPOINT_URL:-http://med-agent-hub:8080/v1/chat/completions}
+      CHARTSEARCH_HUB_PRESETS: ${CHARTSEARCH_HUB_PRESETS:-}
       CHARTSEARCH_PROVIDERS_ENABLED: ${CHARTSEARCH_PROVIDERS_ENABLED:-hub}
       CHARTSEARCH_PROVIDERS_DEFAULT: ${CHARTSEARCH_PROVIDERS_DEFAULT:-hub}
       CHARTSEARCH_BUNDLED_ENGINE: ${CHARTSEARCH_BUNDLED_ENGINE:-remote}
