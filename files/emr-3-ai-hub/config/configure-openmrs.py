@@ -472,7 +472,7 @@ def main() -> int:
     hub_endpoint_url = os.environ.get(
         "CHARTSEARCH_HUB_ENDPOINT_URL", "http://med-agent-hub:8080/v1/chat/completions"
     ).strip()
-    providers_enabled = os.environ.get("CHARTSEARCH_PROVIDERS_ENABLED", "bundled,hub").strip()
+    providers_enabled = os.environ.get("CHARTSEARCH_PROVIDERS_ENABLED", "hub").strip()
     providers_default = os.environ.get("CHARTSEARCH_PROVIDERS_DEFAULT", "hub").strip()
     bundled_engine = os.environ.get("CHARTSEARCH_BUNDLED_ENGINE", "remote").strip()
     bundled_endpoint_url = os.environ.get(

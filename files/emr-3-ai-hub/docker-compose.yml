@@ -1,6 +1,6 @@
 services:
   gateway:
-    image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly-chartsearch}
+    image: ${GATEWAY_IMAGE:-openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly-chartsearch}}
     restart: always
     depends_on:
       - frontend
@@ -9,7 +9,7 @@ services:
       - "${GATEWAY_PORT:-8889}:80"
 
   frontend:
-    image: openmrs/openmrs-reference-application-3-frontend:${TAG:-nightly-chartsearch}
+    image: ${FRONTEND_IMAGE:-openmrs/openmrs-reference-application-3-frontend:${TAG:-nightly-chartsearch}}
     restart: always
     environment:
       SPA_PATH: /openmrs/spa
@@ -18,7 +18,7 @@ services:
       SPA_DEFAULT_LOCALE:
 
   backend:
-    image: openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}
+    image: ${BACKEND_IMAGE:-openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}}
     restart: always
     depends_on:
       db:
@@ -244,7 +244,7 @@ services:
       QUERYSTORE_USERNAME: ${QUERYSTORE_USERNAME:-med-agent-hub}
       QUERYSTORE_PASSWORD: ${QUERYSTORE_PASSWORD:-}
       CHARTSEARCH_HUB_ENDPOINT_URL: ${CHARTSEARCH_HUB_ENDPOINT_URL:-http://med-agent-hub:8080/v1/chat/completions}
-      CHARTSEARCH_PROVIDERS_ENABLED: ${CHARTSEARCH_PROVIDERS_ENABLED:-bundled,hub}
+      CHARTSEARCH_PROVIDERS_ENABLED: ${CHARTSEARCH_PROVIDERS_ENABLED:-hub}
       CHARTSEARCH_PROVIDERS_DEFAULT: ${CHARTSEARCH_PROVIDERS_DEFAULT:-hub}
       CHARTSEARCH_BUNDLED_ENGINE: ${CHARTSEARCH_BUNDLED_ENGINE:-remote}
       CHARTSEARCH_BUNDLED_ENDPOINT_URL: ${CHARTSEARCH_BUNDLED_ENDPOINT_URL:-http://llama-router:8077/v1/chat/completions}
