@@ -183,7 +183,9 @@ services:
       - --models-preset
       - /config/llama-router.ini
       - --models-max
-      - "${LLAMA_ROUTER_MODELS_MAX:-2}"
+      - "${LLAMA_ROUTER_MODELS_MAX:-0}"
+      - --sleep-idle-seconds
+      - "${LLAMA_ROUTER_SLEEP_IDLE_SECONDS:-600}"
       - --jinja
     volumes:
       - ./router/llama-router.ini:/config/llama-router.ini:ro
@@ -215,9 +217,11 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       LLM_MODEL_MAP: ${MED_AGENT_LLM_MODEL_MAP:-}
       LLM_TOKENIZER_MODE: ${MED_AGENT_TOKENIZER_MODE:-auto}
+      LLM_TOKENIZER_TIMEOUT_SECONDS: ${MED_AGENT_TOKENIZER_TIMEOUT_SECONDS:-120}
       LLM_TEMPERATURE: ${MED_AGENT_TEMPERATURE:-0.0}
       LLAMA_MODEL_DIR: /app/models
       MED_AGENT_PRELOAD_MODELS: ${MED_AGENT_PRELOAD_MODELS:-gemma-4-12b,gemma-e4b,qwen3.5-9b}
+      MED_AGENT_ROUTER_VRAM_BUDGET_MIB: ${MED_AGENT_ROUTER_VRAM_BUDGET_MIB:-}
       HUB_ANCHOR: ${HUB_ANCHOR:-}
       HUB_TIMEZONE: ${HUB_TIMEZONE:-UTC}
       QUERYSTORE_BASE_URL: ${QUERYSTORE_BASE_URL:-http://backend:8080/openmrs}
