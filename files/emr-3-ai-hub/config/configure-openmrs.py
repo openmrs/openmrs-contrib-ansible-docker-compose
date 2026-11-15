@@ -88,11 +88,28 @@ DEFAULT_HUB_PRESETS: list[dict[str, Any]] = [
         },
     },
     {
+        "id": "gemma-4-26b",
+        "label": "Gemma 4 26B",
+        "description": "Single-pass clinical answer with Gemma 4 26B and deterministic safety checks.",
+        "default": False,
+        "selection_priority": 20,
+        "model": "gemma-26b",
+        "execution": {
+            "mode": "quick",
+            "preset_id": "gemma-4-26b",
+            "checks": {
+                "temporal": "enforce",
+                "confidence": "findings",
+                "drug_safety": True,
+            },
+        },
+    },
+    {
         "id": "gemma-4-e4b",
         "label": "Gemma 4 E4B (Fast)",
         "description": "Fast single-pass clinical answer with Gemma 4 E4B and deterministic safety checks.",
         "default": False,
-        "selection_priority": 20,
+        "selection_priority": 30,
         "model": "gemma-e4b",
         "execution": {
             "mode": "quick",
@@ -109,7 +126,7 @@ DEFAULT_HUB_PRESETS: list[dict[str, Any]] = [
         "label": "Qwen 3.5 9B",
         "description": "Single-pass clinical answer with Qwen 3.5 9B and deterministic safety checks.",
         "default": False,
-        "selection_priority": 30,
+        "selection_priority": 40,
         "model": "qwen3.5-9b",
         "execution": {
             "mode": "quick",
