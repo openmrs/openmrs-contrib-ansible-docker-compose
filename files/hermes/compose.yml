@@ -11,12 +11,14 @@ x-logging: &logging
     max-size: 10m
     max-file: "3"
 
-# Onyx (headless: no web server or nginx) indexes public OpenMRS content; agents search it through
-# LiteLLM's onyx_search MCP server. Admin configures it through its REST API (`bin/admin onyx`).
+# Onyx indexes public OpenMRS content; agents search it through LiteLLM's onyx_search MCP server.
+# Admin configures it through its REST API (`bin/admin onyx`). Its web UI (onyx-web) is only for
+# looking into indexing, on 127.0.0.1.
 #
 # Networks: onyx (internal) connects litellm and admin to onyx-api and onyx-mcp; onyx-backend
 # (internal) connects Onyx's services to its datastores; onyx-egress lets onyx-api and
-# onyx-background fetch indexed sources.
+# onyx-background fetch indexed sources; onyx-ui connects onyx-web to onyx-api (not internal, since
+# an internal network can't publish onyx-web's host port).
 x-onyx-backend: &onyx-backend
   image: onyxdotapp/onyx-backend:v5.0.4@sha256:b1e7fc019b13a6d6b16cb425feb9e31d5e8845811cc36c2e13ebc865d60b5df5
   restart: always
@@ -121,7 +123,7 @@ services:
       retries: 10
 
   litellm:
-    image: ghcr.io/berriai/litellm-database:v1.106.4@sha256:db36453d25e76c9eb689d7d51b8e5fa48843243d7a86ed1284cf574ce0107b3f
+    image: ghcr.io/berriai/litellm-database:v1.109.1@sha256:932c54440654f8f8466a85887612d95dcfb04ae2fc01257844332f4bf3b96986
     restart: always
     logging: *logging
     security_opt: [no-new-privileges:true]
@@ -210,7 +212,7 @@ services:
   onyx-api:
     <<: *onyx-backend
     command: ["/bin/sh", "-c", "alembic upgrade head && exec uvicorn onyx.main:app --host 0.0.0.0 --port 8080"]
-    networks: [onyx, onyx-backend, onyx-egress]
+    networks: [onyx, onyx-backend, onyx-egress, onyx-ui]
     depends_on:
       onyx-db:
         condition: service_healthy
@@ -259,6 +261,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Onyx's web UI on 127.0.0.1, for looking into indexing (attempts, errors, tracebacks) and browsing
+  # what's indexed. Log in with ONYX_ADMIN_EMAIL and ONYX_ADMIN_PASSWORD from secrets/onyx-admin.env.
+  # Manage sources and models with `bin/admin onyx`: changes made here aren't expected by admin.
+  onyx-web:
+    image: onyxdotapp/onyx-web-server:v5.0.4@sha256:8cb4bb4d7b6669f9cf9a5c3322af4fe26bfe3052d0b7bbd0947551f6dce077c3
+    restart: always
+    logging: *logging
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    networks: [onyx-ui]
+    environment:
+      INTERNAL_URL: http://onyx-api:8080
+      OVERRIDE_API_PRODUCTION: "true"
+    ports:
+      - "127.0.0.1:${ONYX_UI_HOST_PORT:-3000}:3000"
+    depends_on:
+      onyx-api:
+        condition: service_healthy
 
   onyx-db:
     image: postgres:18.6-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
@@ -408,6 +429,7 @@ networks:
   onyx-backend:
     internal: true
   onyx-egress: {}
+  onyx-ui: {}
 
 volumes:
   postgres-data: {}

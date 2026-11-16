@@ -22,6 +22,7 @@ from contextvars import ContextVar
 from typing import Any, Final
 
 from litellm._logging import verbose_router_logger
+from litellm.router_api import RoutingContext as RouterContext
 from litellm.router_strategy.complexity_router.complexity_router import (
     ComplexityRouter,
     _extract_current_ask_and_system_prompt,
@@ -49,7 +50,7 @@ def _router_model_problem(router: Any, model_name: str) -> str | None:
     Rejects unknown names and routers such as `auto` (directly or through a model group alias), which
     would call this plugin again.
     """
-    deployments = router.get_model_list(model_name=model_name) or []
+    deployments = router.registry().deployments(model_name) or []
     if not deployments:
         return f"model {model_name!r} is not in the LiteLLM model list"
     routers = [
@@ -68,7 +69,7 @@ def _jev_deployment_problem(router: Any) -> str | None:
     Checked up front because LiteLLM only notices a missing key on the call, so every request
     would otherwise wait on a failed Jev call.
     """
-    deployments = router.get_model_list(model_name=_JEV_DEPLOYMENT) or []
+    deployments = router.registry().deployments(_JEV_DEPLOYMENT) or []
     if not deployments:
         return f"model {_JEV_DEPLOYMENT!r} is not in the LiteLLM model list"
     if not any(d.get("litellm_params", {}).get("api_key") for d in deployments) and not os.environ.get("TYPESAFE_API_KEY"):
@@ -134,7 +135,7 @@ class ChainedTierClassifier:
             try:
                 delegate = ComplexityRouter(
                     model_name=f"tier-classifier-{name}",
-                    litellm_router_instance=router,
+                    ctx=RouterContext(router),
                     complexity_router_config={**configs[name], "tiers": _DELEGATE_TIERS},
                     derive_savings_baseline=False,
                 )
