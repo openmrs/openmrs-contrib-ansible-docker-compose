@@ -197,6 +197,26 @@ services:
       retries: 10
       start_period: 30s
 
+  ddi-service:
+    image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
+    platform: ${HUB_PLATFORM:-linux/amd64}
+    restart: always
+    command:
+      - python
+      - -m
+      - uvicorn
+      - ddi_service.app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8090"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   med-agent-hub:
     image: ${HUB_IMAGE:-ghcr.io/pmanko/med-agent-hub:${HUB_TAG:-latest}}
     platform: ${HUB_PLATFORM:-linux/amd64}
@@ -204,11 +224,14 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
+      ddi-service:
+        condition: service_healthy
       models-init:
         condition: service_completed_successfully
       llama-router:
         condition: service_healthy
     environment:
+      DDI_SERVICE_URL: ${DDI_SERVICE_URL:-http://ddi-service:8090}
       HUB_API_KEY: ${CHARTSEARCH_HUB_API_KEY:-}
       LLM_PROVIDER: ${MED_AGENT_LLM_PROVIDER:-openai-compatible}
       LLM_BASE_URL: ${MED_AGENT_LLM_BASE_URL:-http://llama-router:8077}
