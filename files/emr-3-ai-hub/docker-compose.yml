@@ -19,6 +19,7 @@ services:
 
   backend:
     image: ${BACKEND_IMAGE:-openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}}
+    entrypoint: ["/bin/sh", "/usr/local/bin/backend-init.sh"]
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -168,7 +169,7 @@ services:
       disable: true
 
   llama-router:
-    image: ghcr.io/ggml-org/llama.cpp@sha256:6bc9134e3278a0ecab23d7ef2f6a46b4595740014fe9bc2f67e8ba7dca8395b4
+    image: ${LLAMA_ROUTER_IMAGE:-ghcr.io/ggml-org/llama.cpp@sha256:6bc9134e3278a0ecab23d7ef2f6a46b4595740014fe9bc2f67e8ba7dca8395b4}
     restart: always
     depends_on:
       models-init:

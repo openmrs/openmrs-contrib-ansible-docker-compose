@@ -12,7 +12,7 @@ set -eu
 
 if [ "$(id -u)" = "0" ]; then
   chown -R 1001:1001 /openmrs/data 2>/dev/null || true
-  exec runuser -u openmrs -- "$0" "$@"
+  exec runuser -u openmrs -- /bin/sh "$0" "$@"
 fi
 
 cd /openmrs
