@@ -25,8 +25,10 @@ services:
       KC_PROXY_HEADERS: ${KC_PROXY_HEADERS:-xforwarded}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-Admin123}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     healthcheck:
-      test: curl --head -fsS http://localhost:8080/health/live || exit 1
+      test: curl --head -fsSk https://localhost:9000/health/ready || exit 1
     restart: "always"
     ports:
       - "127.0.0.1:8080:8080"
@@ -71,6 +73,70 @@ services:
       - /etc/letsencrypt/live/adaba.openmrs.org:/etc/ssl/certs/
       - /etc/letsencrypt/archive/adaba.openmrs.org:/etc/archive/adaba.openmrs.org
       - ip_updater_logs:/var/log/ip_updater/
+
+  authentik-db-init:
+    image: postgres:18-alpine
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-Postgres123}
+      PGDATABASE: ${POSTGRES_DB:-postgres}
+      AUTHENTIK_DB: ${AUTHENTIK_POSTGRES_DB:-authentik}
+    command:
+      - sh
+      - -c
+      - >-
+        psql -tAc "SELECT 1 FROM pg_database WHERE datname = '$$AUTHENTIK_DB'" | grep -q 1
+        || psql -c "CREATE DATABASE \"$$AUTHENTIK_DB\""
+    restart: "no"
+
+  authentik-server:
+    image: openmrsinfra/openmrs-id-authentik:staging
+    command: server
+    environment: &authentik-env
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?set AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_POSTGRESQL__HOST: db
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER:-postgres}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD:-Postgres123}
+      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    ports:
+      # Admin UI only; nothing outside the host needs to reach authentik
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      authentik-db-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+    restart: "always"
+    shm_size: 512mb
+
+  authentik-worker:
+    image: openmrsinfra/openmrs-id-authentik:staging
+    command: worker
+    environment:
+      <<: *authentik-env
+      # Password for the akadmin user; only applied on the first start against an empty database
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:?set AUTHENTIK_BOOTSTRAP_PASSWORD}
+      AUTHENTIK_WORKER__THREADS: ${AUTHENTIK_WORKER_THREADS:-4}
+      AUTHENTIK_LDAP_URL: ${AUTHENTIK_LDAP_URL:-}
+      AUTHENTIK_LDAP_BIND_DN: ${AUTHENTIK_LDAP_BIND_DN:-}
+      AUTHENTIK_LDAP_BIND_PASSWORD: ${LDAP_BIND_PASSWORD:-}
+      ATLASSIAN_SCIM_URL: ${ATLASSIAN_SCIM_URL:-}
+      ATLASSIAN_SCIM_TOKEN: ${ATLASSIAN_SCIM_TOKEN:-}
+      ATLASSIAN_EMAIL_DOMAIN: ${ATLASSIAN_EMAIL_DOMAIN:-}
+    depends_on:
+      authentik-db-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+    restart: "always"
+    shm_size: 512mb
+
 volumes:
   postgres_data:
     driver: local
