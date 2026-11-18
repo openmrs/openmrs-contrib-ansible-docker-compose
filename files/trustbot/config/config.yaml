@@ -34,7 +34,7 @@ discourse:
 keycloak:
   # base_url: "http://host.docker.internal:8090"
   # realm: "master"
-  base_url: "https://id-new.openmrs.org"
+  base_url: "https://id.openmrs.org"
   realm: "openmrs"
 
   retry:

@@ -37,6 +37,15 @@ rules:
           - jira-users
           - jira-trunk-developer
           - confluence-users
+      # slack_notify posts a templated message to Slack. `message` is
+      # required and supports ${openmrs_id}, interpolated from the
+      # firing event's target OpenMRS ID. `channel` is optional (a
+      # Slack channel ID or a "#name") and defaults to config.yaml's
+      # slack.trusted_channel_id when omitted — e.g. `channel:
+      # "#community"` to post somewhere other than the trusted channel
+      # (trustbot must be invited into that channel first).
+      - type: slack_notify
+        message: "${openmrs_id} trusted by OpenMRS Talk"
 
   # ---------------------------------------------------------------------------
   # Alternative: the same grant, via Discourse's native `user_promoted`
@@ -77,6 +86,8 @@ rules:
           - jira-users
           - jira-trunk-developer
           - confluence-users
+      - type: slack_notify
+        message: "${openmrs_id} no longer trusted by OpenMRS Talk"
 
   # ---------------------------------------------------------------------------
   # Manually grant community edit access via Slack /trust command.
