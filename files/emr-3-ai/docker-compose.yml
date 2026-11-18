@@ -3,6 +3,7 @@ version: "3.8"
 services:
   gateway:
     image: openmrs/openmrs-reference-application-3-gateway:${TAG:-nightly-chartsearch}
+    restart: "unless-stopped"
     depends_on:
       - frontend
       - backend
@@ -11,6 +12,7 @@ services:
 
   frontend:
     image: openmrs/openmrs-reference-application-3-frontend:${TAG:-nightly-chartsearch}
+    restart: "unless-stopped"
     environment:
       SPA_PATH: /openmrs/spa
       API_URL: /openmrs
@@ -18,6 +20,7 @@ services:
 
   backend:
     image: openmrs/openmrs-reference-application-3-backend:${TAG:-nightly-chartsearch}
+    restart: "unless-stopped"
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +44,7 @@ services:
 
   db:
     image: mariadb:10.11
+    restart: "unless-stopped"
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     healthcheck:
       test: ["CMD", "mariadb", "--user=${OMRS_DB_USER:-openmrs}", "--password=${OMRS_DB_PASSWORD:-openmrs}", "-e", "SELECT 1"]
