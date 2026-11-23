@@ -1,0 +1,4 @@
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+add: olcLimits
+olcLimits: dn.exact="uid=omrsid,ou=system,dc=openmrs,dc=org" size.prtotal=unlimited
