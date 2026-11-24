@@ -8,7 +8,7 @@ volumes:
 services:
   openldap:
     restart: "always"
-    image: bitnami/openldap:2.5.18
+    image: bitnamilegacy/openldap:2.5.18
     hostname: ldap-stg.openmrs.org
     ports:
       - 636:636
