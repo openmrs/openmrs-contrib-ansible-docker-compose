@@ -105,6 +105,7 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD:-Postgres123}
       AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
       AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_WEB__PATH: ${AUTHENTIK_WEB__PATH:-/}
     ports:
       # Admin UI only; nothing outside the host needs to reach authentik
       - "127.0.0.1:9000:9000"
