@@ -35,39 +35,12 @@ ldapwhoami -D "uid=testadmin,ou=users,dc=openmrs,dc=org" -W
 
 ## Password hashing
 
-`schemas/passwordhash.ldif` makes OpenLDAP hash passwords with Argon2 instead of the default salted SHA-1
-(`{SSHA}`), and makes it hash a password even when a client writes it with a plain modify (otherwise it is
-stored in cleartext). Existing hashes in any scheme keep working, and a password is stored with Argon2 the
-next time it is written. The OpenMRS ID Keycloak rewrites outdated hashes as users log in (the "Upgrade LDAP
-Password Hash" step in openmrs-contrib-itsm-id).
+`schemas/passwordhash.ldif` makes Argon2 the default password hash and enables the ppolicy overlay so that
+passwords written with a plain modify are hashed rather than stored in cleartext. Like everything in
+`schemas/`, it is only applied when the directory is created; changes to it must be applied to an existing
+directory by hand with `ldapmodify` against `cn=config`.
 
-Each bind against an Argon2 hash uses 64 MiB of memory for about 0.1-0.2s. With slapd's default of 16 threads
-that is about 1 GiB at peak; lower `m` in the file if the host can't spare it.
-
-The file is only loaded when the directory is first created. To apply it to an existing directory, do this
-once, after deploying this version (`docker exec -it <container> bash`, then):
-
-```
-# 1. Is there already a ppolicy overlay or a hash setting? If an overlay is listed, remove the last entry from
-#    a copy of passwordhash.ldif and add olcPPolicyHashCleartext: TRUE to the existing overlay instead.
-ldapsearch -LLL -D "cn=admin,cn=config" -W -b "cn=config" '(|(objectClass=olcPPolicyConfig)(olcPasswordHash=*))' dn olcPasswordHash
-
-# 2. Once the overlay exists, any entry that names a policy in pwdPolicySubentry has that policy enforced.
-#    Check which entries do, and that their policy is one you want enforced.
-ldapsearch -LLL -D "cn=admin,dc=openmrs,dc=org" -W -b "dc=openmrs,dc=org" '(pwdPolicySubentry=*)' dn pwdPolicySubentry
-
-# 3. Apply it (not idempotent: running it twice loads the module twice)
-ldapadd -D "cn=admin,cn=config" -W -f /opt/bitnami/openldap/etc/schema/passwordhash.ldif
-
-# 4. Check: a changed password should now start with {ARGON2}
-ldapsearch -LLL -D "cn=admin,dc=openmrs,dc=org" -W -b "uid=<user>,ou=users,dc=openmrs,dc=org" userPassword
-```
-
-Do this before enabling the Keycloak rehash step. Until it is done, that step finds LDAP still storing `{SSHA}`,
-logs a warning and pauses itself for an hour at a time.
-
-The `bitnami/openldap` images were removed from Docker Hub in 2025; `bitnamilegacy/openldap` is the same build,
-but it no longer gets updates.
+Argon2 binds use `m` KiB of memory each (64 MiB), so up to about 1 GiB with slapd's 16 threads.
 
 ```
 # delete containers and volumes

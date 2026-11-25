@@ -8,6 +8,7 @@ volumes:
 services:
   openldap:
     restart: "always"
+    # bitnami/openldap was removed from Docker Hub; bitnamilegacy is the same build but gets no updates
     image: bitnamilegacy/openldap:2.5.18
     hostname: ldap.openmrs.org
     ports:
