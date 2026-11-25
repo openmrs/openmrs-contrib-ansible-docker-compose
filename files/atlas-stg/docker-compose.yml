@@ -1,60 +1,54 @@
----
-version: '3'
 services:
-  db:
-    image: mysql:5.6
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysqlfordocker}
-      MYSQL_DATABASE: ${DB_NAME:-atlasdb}
-      MYSQL_USER: ${DB_USERNAME:-atlas}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-iamatlas}
-    volumes:
-      - mysql-data:/var/lib/mysql
-    restart: always
-    healthcheck:
-      test: "exit 0"
-
   atlas:
     image: openmrsinfra/atlas:staging
-    depends_on:
-      - db
-    environment:
-      DB_HOST: ${DB_HOST:-db}
-      DB_NAME: ${DB_NAME:-atlasdb}
-      DB_USERNAME: ${DB_USERNAME:-atlas}
-      DB_PASSWORD: ${DB_PASSWORD:-iamatlas}
-      LDAP_URI: ${LDAP_URI:-ldaps://ldap-stg.openmrs.org:636}
-      LDAP_USER: ${LDAP_USER:-atlas}
-      LDAP_PASSWORD: ${LDAP_PASSWORD:-magic}
-      LDAP_USERS_GROUP: ${LDAP_USERS_GROUP:-atlas-users}
-      LDAP_ADMIN_GROUP: ${LDAP_ADMIN_GROUP:-atlas-administrators}
-      MAIL_HOST: ${MAIL_HOST:-smtp.mandrillapp.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_AUTH: ${MAIL_AUTH:-true}
-      MAIL_USER: ${MAIL_USER:-infrastructure@openmrs.org}
-      MAIL_PASS: ${MAIL_PASS:-magic}
-      SESSION_SECRET: ${SESSION_SECRET:-secret}
-      GOOGLE_MAPS_JS_API_KEY: ${GOOGLE_MAPS_JS_API_KEY:-XXXXXXXXXXX_XXXXXX-XXXXXXXXXXX-XXXXXXXX}
-      GOOGLE_ANALYTICS_TRACKING_ID: ${GOOGLE_ANALYTICS_TRACKING_ID:-XX-XXXXXXXX-X}
-    ports:
-      - 8548:3000
     restart: always
+    environment:
+      - SHEET_ID=${SHEET_ID}
+      - SITE_URL=${SITE_URL}
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_SERVICE_CLIENT_ID=${KEYCLOAK_SERVICE_CLIENT_ID}
+      - KEYCLOAK_SERVICE_CLIENT_SECRET=${KEYCLOAK_SERVICE_CLIENT_SECRET}
+      - GOOGLE_SERVICE_ACCOUNT_KEY=${GOOGLE_SERVICE_ACCOUNT_KEY}
+      - PUBLISH_SECRET=${PUBLISH_SECRET}
+      - MANDRILL_API_KEY=${MANDRILL_API_KEY}
+      - LINK_SIGNING_KEY=${LINK_SIGNING_KEY}
+      - NOTICE_EMAIL=${NOTICE_EMAIL:-}
+      # Staging only. Leave this line out of production's stack: there, an empty value would
+      # mean "email no one", and unset means everyone.
+      - EMAIL_ALLOWLIST=${EMAIL_ALLOWLIST}
+    ports:
+      - "8548:8080"
+    volumes:
+      - atlas-data:/atlas_data
+    # The same check the image has, spelled out as the OpenMRS stacks do. No curl in the image,
+    # so Node's fetch: healthy when /health answers 200 within 5 seconds.
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/markers"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8080/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 
   backup:
     image: openmrsinfra/cron-backup:latest
     depends_on:
-      - db
+      - atlas
     volumes:
-      - mysql-data:/mysql_data
-      - ${BACKUP_DIR-./backups}:/backup
+      - atlas-data:/atlas_data
+      - ${BACKUP_DIR-/opt/backups}:/backup
     environment:
-      - DIRS=/mysql_data:atlas_mysql
+      - DIRS=/atlas_data:atlas-stg-data
       - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
       test: "exit 0"
 
 volumes:
-  mysql-data:
+  atlas-data:
