@@ -7,11 +7,14 @@ FORCE_DESTROY_VOLUMES=${2:-false}
 FORCE_RESTART=${3:-false}
 SERVICE=${4:-''}
 
-# Check if using old or new docker compose
-if command -v docker-compose >/dev/null 2>&1; then
+# Prefer modern Docker Compose, falling back to legacy Compose
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
     DOCKER_COMPOSE=(docker-compose)
 else
-    DOCKER_COMPOSE=(docker compose)
+    echo "ERROR: Docker Compose is not installed" >&2
+    exit 1
 fi
 
 cd /root/docker/$ENVIRONMENT
