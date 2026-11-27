@@ -33,6 +33,15 @@ ldapsearch -LLL -D "cn=admin,cn=config" -W -b "cn=config"
 ldapwhoami -D "uid=testadmin,ou=users,dc=openmrs,dc=org" -W
 >>> testadmin
 
+## Password hashing
+
+`schemas/passwordhash.ldif` makes Argon2 the default password hash and enables the ppolicy overlay so that
+passwords written with a plain modify are hashed rather than stored in cleartext. Like everything in
+`schemas/`, it is only applied when the directory is created; changes to it must be applied to an existing
+directory by hand with `ldapmodify` against `cn=config`.
+
+Argon2 binds use `m` KiB of memory each (64 MiB), so up to about 1 GiB with slapd's 16 threads.
+
 ```
 # delete containers and volumes
 $ docker-compose down -v
